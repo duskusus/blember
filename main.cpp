@@ -2,8 +2,8 @@
 
 int main(int argc, char **argv) {
   Context c("gaming simulator 2069", 1280, 720);
-  Shader v("vertex.vert", GL_VERTEX_SHADER);
-  Shader f("fragment.frag", GL_FRAGMENT_SHADER);
+  Shader v("res/shaders/vertex.vert", GL_VERTEX_SHADER);
+  Shader f("res/shaders/fragment.frag", GL_FRAGMENT_SHADER);
   Program p;
   p.attachShader(v);
   p.attachShader(f);
@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
   p.use();
   float fov = glm::radians(90.0);
   glm::mat4 view = glm::mat4(1.0f);
-  view = glm::translate(view, glm::vec3(0.0, 0.0, -2));
+  view = glm::translate(view, glm::vec3(0.0, 0.0, -0.11));
   glm::mat4 proj = glm::mat4(1.0f);
   proj = glm::perspective(fov, 1280.0f / 720.0f, 0.1f, 100.0f);
 

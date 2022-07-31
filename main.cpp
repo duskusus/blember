@@ -1,17 +1,4 @@
-#include "context.hpp"
-#include "ibo.hpp"
-#include "uniform.hpp"
-#include <GL/glew.h>
-#include <GL/glu.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
-#include <glm/ext/matrix_clip_space.hpp>
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include <string>
+#include "includes.hpp"
 
 int main(int argc, char **argv) {
   Context c("gaming simulator 2069", 1280, 720);

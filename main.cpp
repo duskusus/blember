@@ -1,7 +1,8 @@
 #include "includes.hpp"
+#include "testmodel.hpp"
 
 int main(int argc, char **argv) {
-  Context c("gaming simulator 2069", 1280, 720);
+  Context c("blember", 1280, 720);
   Shader v("res/shaders/vertex.vert", GL_VERTEX_SHADER);
   Shader f("res/shaders/fragment.frag", GL_FRAGMENT_SHADER);
   Program p;
@@ -14,7 +15,7 @@ int main(int argc, char **argv) {
   view = glm::translate(view, glm::vec3(0.0, 0.0, -0.11));
   glm::mat4 proj = glm::mat4(1.0f);
   proj = glm::perspective(fov, 1280.0f / 720.0f, 0.1f, 100.0f);
-
+  entity world("res/models/world.obj");
   Uniform u_view("view", p, (void *)glUniformMatrix4fv);
   Uniform u_proj("proj", p, (void *)glUniformMatrix4fv);
   u_view.set((void *)glm::value_ptr(view));

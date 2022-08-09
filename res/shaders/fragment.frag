@@ -1,5 +1,8 @@
 #version 330
 out vec4 LFragment;
+varying vec3 normal;
 void main() {
-    LFragment = vec4(0.0, 0.0, length(vec2(500, 500) - gl_FragCoord.xy) / 100.0, 1.0);
+    const vec3 light = vec3(-1.0, -1.0, -1.0);
+    const float intensity = dot(light, normal);
+    LFragment = vec4(intensity, 1.0);
 }

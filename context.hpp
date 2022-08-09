@@ -4,7 +4,7 @@
 #include <GL/glu.h>
 #include <iostream>
 #include <string>
-#include "vertexattrib.hpp"
+#include "vertexbuffer.hpp"
 class Context {
     SDL_Window *window = nullptr;
     SDL_GLContext context = nullptr;

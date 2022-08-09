@@ -1,3 +1,4 @@
+#pragma once
 class IBO {
     public:
     IBO(unsigned int *p_data, unsigned int p_size);

@@ -1,4 +1,4 @@
-env = Environment(CC='clang++')
+env = Environment(CC='clang')
 env.Append(LIBS=['SDL2', 'GL', 'GLEW', 'GLU'])
 env.Append(CCFLAGS='-g')
 env.Program('blember', Glob('./*.cpp'))

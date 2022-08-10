@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
   float fov = glm::radians(90.0);
   glm::mat4 view = glm::mat4(1.0f);
   glm::mat4 model = glm::mat4(0.001f);
-  view = glm::translate(view, glm::vec3(0.0, 10.0, 50));
+  view = glm::translate(view, glm::vec3(0.0, 0.0, 50));
   glm::mat4 proj = glm::mat4(1.0f);
   Uniform u_model("model", p, (void *) glUniformMatrix4fv);
   Uniform u_view("view", p, (void *)glUniformMatrix4fv);

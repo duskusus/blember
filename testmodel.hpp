@@ -46,7 +46,6 @@ public:
         indices.push_back(stoi(results[1]));
         indices.push_back(stoi(results[4]));
         indices.push_back(stoi(results[7]));
-        indices.push_back(stoi(results[10]));
       } else if (words[0] == "v") {
         vertices.push_back(stof(words[1]));
         vertices.push_back(stof(words[2]));
@@ -62,13 +61,14 @@ public:
     v->enable();
     v->upload();
     v->bind();
-    // for(auto i : indices) {std::cout << i << "\n";}
-    // for(auto v : vertices) {std::cout << v << "\n";}
+    //for(auto i : indices) {std::cout << i << "\n";}
+    //for(auto v : vertices) {std::cout << v << "\n";}
   }
   void render() {
     p.use();
     glEnable(GL_DEPTH_TEST);
     v->bind();
-    glDrawElements(GL_TRIANGLES, indices.size() / 4, GL_UNSIGNED_INT, &indices[0]);
+    i->bind();
+    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
   }
 };

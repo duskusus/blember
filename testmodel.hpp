@@ -43,9 +43,10 @@ public:
           boost::split(parts, word, boost::is_any_of("/"));
           results.insert(results.end(), parts.begin(), parts.end());
         }
-        indices.push_back(stoi(results[1]));
-        indices.push_back(stoi(results[4]));
-        indices.push_back(stoi(results[7]));
+        int indicesOffset = -1;
+        indices.push_back(std::stoi(results[1]) + indicesOffset);
+        indices.push_back(std::stoi(results[4]) + indicesOffset);
+        indices.push_back(std::stoi(results[7]) + indicesOffset);
       } else if (words[0] == "v") {
         vertices.push_back(stof(words[1]));
         vertices.push_back(stof(words[2]));
@@ -61,10 +62,10 @@ public:
     v->enable();
     v->upload();
     v->bind();
-    //for(auto i : indices) {std::cout << i << "\n";}
-    //for(auto v : vertices) {std::cout << v << "\n";}
+    //for(auto i : indices) {std::cout << i << std::endl;}
   }
   void render() {
+    glDisable(GL_CULL_FACE);
     p.use();
     glEnable(GL_DEPTH_TEST);
     v->bind();

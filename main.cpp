@@ -32,6 +32,9 @@ int main(int argc, char **argv) {
   entity e("res/models/world.obj", p);
   e.ready();
   while (c.poll() == 1) {
+    model = glm::rotate(model, (glm::mediump_float32)0.01, glm::vec3(0.0, 1.0, 0.0));
+    u_view.set((void *) glm::value_ptr(view));
+    u_model.set((void *) glm::value_ptr(model));
     e.render();
     c.swap();
   }

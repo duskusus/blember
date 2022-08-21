@@ -6,11 +6,16 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <fstream>
 #include <glm/ext/vector_float3.hpp>
+#include <glm/common.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec3.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <stdio.h>
 #include <string>
+#include "uniform.hpp"
 class entity {
 public:
   std::string data = "";
@@ -19,19 +24,22 @@ public:
   Program &p;
   VertexBuffer *v;
   IBO *i;
+  Uniform &u_model;
 
-  entity(std::string objpath, Program &m_p) : p(m_p) {
-    FILE *f = fopen(objpath.c_str(), "rb");
-    fseek(f, 0, SEEK_END);
-    long size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    char *s = (char *)malloc(size + 1);
-    fread(s, size, 1, f);
-    fclose(f);
-    s[size] = 0;
-    data = s;
+  glm::mat4 model = glm::mat4(1.0f);
+
+  entity(std::string objpath, Program &m_p, Uniform &u_model) : p(m_p), u_model(u_model) {
+    std::fstream f;
+    f.open(objpath);
     std::vector<std::string> lines;
-    boost::split(lines, data, boost::is_any_of("\n"));
+    if (f.is_open()) {
+      std::string line;
+      while (getline(f, line)) {
+        lines.push_back(line);
+      }
+    } else {
+      std::cout << "unable to open " << objpath << std::endl;
+    }
     for (int i = 0; i < lines.size(); i++) {
       const std::string &line = lines[i];
       std::vector<std::string> words;
@@ -53,6 +61,11 @@ public:
         vertices.push_back(stof(words[3]));
       }
     }
+    std::cout << "{";
+    for(auto &i : indices) {
+      std::cout << i << ", ";
+    }
+    std::cout << "}" << std::endl;
   }
   void ready() {
     i = new IBO(&indices[0], indices.size());
@@ -62,14 +75,20 @@ public:
     v->enable();
     v->upload();
     v->bind();
-    //for(auto i : indices) {std::cout << i << std::endl;}
   }
   void render() {
-    glDisable(GL_CULL_FACE);
     p.use();
+    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+    u_model.set(glm::value_ptr(model));
     v->bind();
     i->bind();
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+  }
+  void move(glm::vec3 movement) {
+    model = glm::translate(model, movement);
+  }
+  void scale(glm::vec3 scale) {
+    model = glm::scale(model, scale);
   }
 };

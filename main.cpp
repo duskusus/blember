@@ -1,13 +1,14 @@
 #include "includes.hpp"
 #include "testmodel.hpp"
-#include <glm/ext/matrix_transform.hpp>
-#include <glm/ext/vector_float3.hpp>
-#include <glm/fwd.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "testplane.hpp"
+#include <SDL2/SDL_keycode.h>
+#include <glm/glm.hpp>
 #include <stacktrace>
-#include <glm/gtc/matrix_transform.hpp>
+#include <chrono>
+#include "chunk.hpp"
 int main(int argc, char **argv) {
   Context c("blember", 1280, 720);
+  c.showFrameInfo = false;
   Shader v("res/shaders/vertex.vert", GL_VERTEX_SHADER);
   Shader f("res/shaders/fragment.frag", GL_FRAGMENT_SHADER);
   Program p;
@@ -16,26 +17,60 @@ int main(int argc, char **argv) {
   p.link();
   p.use();
   float fov = glm::radians(90.0);
-  glm::mat4 view = glm::mat4(1.0f);
-  glm::mat4 model = glm::mat4(1.0f);
-  model = glm::scale(model, glm::vec3(1.0));
-  model = glm::translate(model, glm::vec3(0.0, -50.0, -2.0));
+  auto view = glm::mat4(1.0f);
   view = glm::translate(view, glm::vec3(0.0, 0, 0));
-  glm::mat4 proj = glm::perspective(90.0, 1280.0/720.0, 0.01, 1000.0);
-  Uniform u_model("model", p, (void *) glUniformMatrix4fv);
+  glm::mat4 proj = glm::perspective(90.0, 1280.0 / 720.0, 0.01, 100000.0);
+  Uniform u_model("model", p, (void *)glUniformMatrix4fv);
   Uniform u_view("view", p, (void *)glUniformMatrix4fv);
   Uniform u_proj("proj", p, (void *)glUniformMatrix4fv);
-  u_view.set((void *)glm::value_ptr(view));
+  Uniform u_time("time", p, (void *) glUniform1f);
   u_proj.set((void *)glm::value_ptr(proj));
-  GLfloat positions[] = {-1, -1, 0.0, 1, -1, 0.0, 1, 1, 0.0, -1, 1, 0.0};
-  GLuint indices[] = {0, 1, 2, 2, 3, 0};
-  entity e("res/models/world.obj", p);
+  glm::vec4 camera = glm::vec4(5.0);
+  entity e("res/models/cube.obj", p, u_model);
+  Chunk testchunk(p);
   e.ready();
+  auto start = std::chrono::steady_clock::now();
+  auto last_frame = start;
+  e.scale(glm::vec3(1.0));
   while (c.poll() == 1) {
-    model = glm::rotate(model, (glm::mediump_float32)0.01, glm::vec3(0.0, 1.0, 0.0));
-    u_view.set((void *) glm::value_ptr(view));
-    u_model.set((void *) glm::value_ptr(model));
-    e.render();
+    u_view.set((void *)glm::value_ptr(view));
+    auto now = std::chrono::steady_clock::now();
+    float deltaTime = std::chrono::duration_cast<std::chrono::microseconds>(now - last_frame).count() / 1000000.0;
+    last_frame = now;
+    //std::cout << "Frame Time " << deltaTime << std::endl;
+    float elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - start).count() / 1000000.0;
+    u_time.set(&elapsed);
+    u_model.set((void*)glm::value_ptr(glm::mat4(1.0f)));
+    testchunk.render();
+    glm::vec4 move = glm::vec4(0.0);
+    if (c.keys->at(SDLK_w)) {
+      move.z += 1.0;
+    }
+    if (c.keys->at(SDLK_s)) {
+      move.z += -1.0;
+    }
+    if (c.keys->at(SDLK_a)) {
+      move.x += 1.0;
+    }
+    if (c.keys->at(SDLK_d)) {
+      move.x -= 1.0;
+    }
+    if (c.keys->at(SDLK_SPACE)) {
+      move.y -= 1.0;
+    }
+    if (c.keys->at(SDLK_LCTRL)) {
+      move.y += 1.0;
+    }
+    if (c.keys->at(SDLK_ESCAPE)) {
+      break;
+    }
+    view = glm::mat4(1.0);
+    view = glm::rotate(view, c.mouse.y, glm::vec3(1.0, 0.0, 0.0));
+    view = glm::rotate(view, c.mouse.x, glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 inview = glm::inverse(view);
+    move = inview * move;
+    camera += move;
+    view = glm::translate(view, glm::vec3(camera.x, camera.y, camera.z));
     c.swap();
   }
   return 0;

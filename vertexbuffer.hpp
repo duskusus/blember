@@ -6,12 +6,14 @@ class VertexBuffer {
     GLuint program;
     GLint location;
     GLuint bufferID;
+    GLuint vaoID;
     //same order as parameters to VertexBufferPointer
     unsigned int size;
     GLenum type;
     GLboolean normalized;
     GLsizei stride;
     void *data = nullptr;
+
 
     unsigned int count;
 

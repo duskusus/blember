@@ -66,6 +66,11 @@ public:
       std::cout << i << ", ";
     }
     std::cout << "}" << std::endl;
+    std::cout << "{";
+    for(auto &i : vertices) {
+      std::cout << i << ", ";
+    }
+    std::cout << "}" << std::endl;
   }
   void ready() {
     i = new IBO(&indices[0], indices.size());

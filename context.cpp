@@ -28,7 +28,7 @@ Context::Context(std::string windowName, uint16_t width, uint16_t height)
   glEnable(GL_DEBUG_OUTPUT);
   glDebugMessageCallback(MessageCallback, 0);
 
-  SDL_SetRelativeMouseMode(SDL_TRUE);
+  //SDL_SetRelativeMouseMode(SDL_TRUE);
 
   keys = new std::unordered_map<SDL_Keycode, bool>;
 
@@ -63,10 +63,13 @@ int Context::poll() {
   }
   int mousex = 0;
 int mousey = 0;
+/*
 SDL_GetRelativeMouseState(&mousex, &mousey);
 SDL_WarpMouseInWindow(window, width / 2, height / 2);
 mouse += glm::vec2(float(mousex),float(mousey)) * sensitivity;
+*/
+SDL_GetMouseState(&mousex, &mousey);
+mouse = glm::vec2(float(2.0 * mousex) / width * 2.0 - 1.0, float(2.0 * mousey) / height - 1.0) * sensitivity;
 mouse.y = glm::clamp<float>(mouse.y, -glm::pi<float>()*0.5, glm::pi<float>()*0.5);
-std::cout << mousex << " " << mouse.x << " " << mousey << " " << mouse.y << std::endl;
 return 1;
 }

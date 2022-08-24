@@ -26,4 +26,6 @@ class VertexBuffer {
     void upload();
     void vertexSpec(unsigned int p_size, GLenum type, GLboolean normalized, GLsizei stride);
     void supplyData();
+    void makeInstanced();
+    ~VertexBuffer();
 };

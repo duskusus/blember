@@ -15,7 +15,7 @@ class Context {
     SDL_GLContext context = nullptr;
     const unsigned short height;
     const unsigned short width;
-    float sensitivity = 0.01;
+    float sensitivity = 2.5;
     unsigned int keycount;
     bool showFrameInfo = true;
     bool captureMouse = true;

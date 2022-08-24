@@ -33,3 +33,9 @@ void VertexBuffer::vertexSpec(unsigned int p_size, GLenum p_type, GLboolean p_no
     normalized = p_normalized;
     stride = p_stride;
 }
+void VertexBuffer::makeInstanced() {
+    glVertexAttribDivisor(location, 1);
+}
+VertexBuffer::~VertexBuffer() {
+    glDeleteBuffers(1, &bufferID);
+}

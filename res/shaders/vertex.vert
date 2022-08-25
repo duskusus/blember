@@ -16,7 +16,7 @@ const int chunkHeight = 32;
 void main() {
     vec3 blockpos = vec3(gl_InstanceID % chunkWidth, (gl_InstanceID / chunkWidth) % chunkLength, gl_InstanceID / (chunkWidth * chunkLength)) * spacing;
     gl_Position = proj * view * model * vec4(aPos + blockpos, 1.0);
-    worldPos = gl_Position.xyz;
+    worldPos = aPos.xyz;
     //gl_Position = proj * view * model * vec4(aPos, 1.0);
     blockColor = aColor;
 }

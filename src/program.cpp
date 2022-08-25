@@ -1,4 +1,4 @@
-#include "program.hpp"
+#include "program.h"
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl_glext.h>
 #include <cstddef>

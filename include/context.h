@@ -6,7 +6,6 @@
 #include <SDL2/SDL_keycode.h>
 #include <iostream>
 #include <string>
-#include "vertexbuffer.hpp"
 #include <unordered_map>
 #include <glm/glm.hpp>
 class Context {

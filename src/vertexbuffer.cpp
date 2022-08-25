@@ -1,4 +1,4 @@
-#include "vertexbuffer.hpp"
+#include "vertexbuffer.h"
 VertexBuffer::VertexBuffer(const std::string &n, Program &p) {
     name = n;
     program = p.getID();

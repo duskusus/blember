@@ -1,4 +1,4 @@
-#include "ibo.hpp"
+#include "ibo.h"
 #include <GL/glew.h>
 #include <SDL2/SDL_opengl.h>
 IBO::IBO(unsigned int *p_data, unsigned int p_size) {

@@ -1,4 +1,4 @@
-#include "shader.hpp"
+#include "shader.h"
 #include <fstream>
 #include <iostream>
 Shader::Shader(std::string filepath, GLenum shaderType) {

@@ -1,11 +1,9 @@
-#include "includes.hpp"
-#include "testmodel.hpp"
-#include "testplane.hpp"
+#include "includes.h"
 #include <SDL2/SDL_keycode.h>
 #include <glm/glm.hpp>
 #include <stacktrace>
 #include <chrono>
-#include "chunk.hpp"
+#include "chunk.h"
 int main(int argc, char **argv) {
   Context c("blember", 1920, 1080);
   c.showFrameInfo = false;

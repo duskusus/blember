@@ -1,5 +1,4 @@
-
-#include "uniform.hpp"
+#include "uniform.h"
 
 Uniform::Uniform(std::string name, Program &p_program, void *p_setFunc) : p(p_program) {
     location = glGetUniformLocation(p.getID(), name.c_str());

@@ -1,6 +1,6 @@
-#include "ibo.hpp"
-#include "program.hpp"
-#include "vertexbuffer.hpp"
+#include "ibo.h"
+#include "program.h"
+#include "vertexbuffer.h"
 #include <assert.h>
 #include <bits/types/FILE.h>
 #include <boost/algorithm/string.hpp>
@@ -15,7 +15,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <string>
-#include "uniform.hpp"
+#include "uniform.h"
 class entity {
 public:
   std::string data = "";

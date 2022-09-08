@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "program.hpp"
+#include "program.h"
 class Uniform {
     unsigned int location;
     Program &p;

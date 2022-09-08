@@ -1,6 +1,6 @@
-#include "context.hpp"
-#include "ibo.hpp"
-#include "uniform.hpp"
+#include "context.h"
+#include "ibo.h"
+#include "uniform.h"
 #include <GL/glew.h>
 #include <GL/glu.h>
 #include <SDL2/SDL.h>

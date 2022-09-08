@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "program.hpp"
+#include "program.h"
 class VertexBuffer {
     std::string name;
     GLuint program;

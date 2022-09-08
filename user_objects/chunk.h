@@ -2,10 +2,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "vertexbuffer.hpp"
-#include "ibo.hpp"
-#include "uniform.hpp"
-#include "program.hpp"
+#include "vertexbuffer.h"
+#include "ibo.h"
+#include "uniform.h"
+#include "program.h"
 class Chunk {
   const float vertices[3 * 8] = {1, 1, -1, 1, -1, -1, 1, 1, 1, 1, -1, 1, -1, 1, -1, -1, -1, -1, -1, 1, 1, -1, -1, 1};
   unsigned int indices[3 * 12] = {4, 2, 0, 2, 7, 3, 6, 5, 7, 1, 7, 5,

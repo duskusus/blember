@@ -1,6 +1,6 @@
 #pragma once
-#include "program.hpp"
-#include "vertexbuffer.hpp"
+#include "program.h"
+#include "vertexbuffer.h"
 #include <cstdlib>
 #include <vector>
 class TestPlane {

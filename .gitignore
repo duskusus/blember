@@ -1,3 +1,4 @@
 *.o
 .sconsign.dblite
-blember
+build
+compile_commands.json

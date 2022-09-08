@@ -1,5 +1,5 @@
 *.o
 .sconsign.dblite
 build
-compile_commands.json
 .vscode
+compile_commands.json

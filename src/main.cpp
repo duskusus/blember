@@ -3,10 +3,10 @@
 #include <chrono>
 #include <glm/glm.hpp>
 
-#include "chunk.hpp"
-#include "includes.hpp"
-#include "testmodel.hpp"
-#include "testplane.hpp"
+#include "chunk.h"
+#include "includes.h"
+#include "testmodel.h"
+#include "testplane.h"
 
 int main(int argc, char **argv)
 {

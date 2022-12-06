@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 Shader::Shader(std::string filepath, GLenum shaderType) {
-  printf("Opening shader");
+  printf("Opening shader %s\n", filepath.c_str());
   std::ifstream file(filepath);
   std::string content((std::istreambuf_iterator<char>(file)),
                       (std::istreambuf_iterator<char>()));

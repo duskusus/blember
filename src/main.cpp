@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 {
 
     Context c("blember", 1920, 1080);
-    c.showFrameInfo = true;
+    c.showFrameInfo = false;
     Shader v("res/shaders/clean.vert", GL_VERTEX_SHADER);
     Shader f("res/shaders/clean.frag", GL_FRAGMENT_SHADER);
 
@@ -51,13 +51,10 @@ int main(int argc, char **argv)
 
     glm::vec4 camera = glm::vec4(5.0);
 
-    const unsigned int worldSize = 4;
-    const unsigned int chunkCount = worldSize * worldSize;
-
     NewChunk nc(p, u_model);
 
-    for(int i = 0; i < 10; i++) {
-        nc.newBlock(v3rand());
+    for(int i = 0; i < 100; i++) {
+        nc.newBlock(glm::vec3(0.0, 0.0, 5.0 * i));
     }
     nc.sync();
 

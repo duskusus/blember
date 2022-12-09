@@ -24,25 +24,23 @@ class block {
     uint32_t type = 0;
 
    private:
-    const static int blockLocation = 0;
+    const static int blockPos = 0;
     const static int blockType = 1;
 
    public:
-    static void registerType(const Program &sp)
+    static void registerType()
     {
-        glVertexAttribPointer(blockLocation, 4, GL_FLOAT, GL_FALSE,
+        glVertexAttribPointer(blockPos, 3, GL_FLOAT, GL_FALSE,
                               sizeof(block),
                               (const void *)offsetof(block, position));
-
+        glEnableVertexAttribArray(blockPos);
         glVertexAttribPointer(blockType, 1, GL_UNSIGNED_INT, GL_FALSE,
                               sizeof(block),
                               (const void *)offsetof(block, type));
-    }
-
-    static void enable()
-    {
-        glEnableVertexAttribArray(blockLocation);
         glEnableVertexAttribArray(blockType);
+
+        glVertexAttribDivisor(blockType, 1);
+        glVertexAttribDivisor(blockPos, 1);
     }
 };
 
@@ -54,9 +52,11 @@ class NewChunk {
     uint32_t instanceBuffer = 0;
     uint32_t indexBuffer = 0;
     uint32_t vao = 0;
-    Program &sp;
+    const Program &sp;
 
     const int vertPos = 2;
+    const int blockType = 1;
+    const int blockPos = 0;
     Uniform &u_model;
 
    public:
@@ -72,18 +72,24 @@ class NewChunk {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
                      GL_STATIC_DRAW);
-                     
-        glVertexAttribPointer(vertPos, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(vertPos);
+        glEnableVertexAttribArray(vertPos);         
+        glVertexAttribPointer(vertPos, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+        
 
         glGenBuffers(1, &indexBuffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
                      GL_STATIC_DRAW);
 
-        block::enable();
-        block::registerType(sp);  // make shader program aware of existence
+        glGenBuffers(1, &instanceBuffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instanceBuffer);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(block) * blockCount, blocks, GL_STATIC_DRAW);
+
+        block::registerType();  // make shader program aware of existence
         // of block type
+
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
     }
 
     block &at(int index)
@@ -107,14 +113,13 @@ class NewChunk {
         sp.use();
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
-
-        glDrawElementsInstanced(GL_LINES, 3 * 12, GL_UNSIGNED_INT, 0, 1);
+        glDrawElementsInstanced(GL_LINES, 6 * 2 * 3, GL_UNSIGNED_INT, 0, blockCount);
     }
 
     void sync()
     {
         glBindVertexArray(vao);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, instanceBuffer);
         glBufferData(GL_ARRAY_BUFFER, chunksize * sizeof(block), blocks,
                      GL_STATIC_DRAW);
     }

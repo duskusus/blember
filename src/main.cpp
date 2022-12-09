@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     const unsigned int worldSize = 4;
     const unsigned int chunkCount = worldSize * worldSize;
 
-    NewChunk nc(p);
+    NewChunk nc(p, u_model);
 
     for(int i = 0; i < 10; i++) {
         nc.newBlock(v3rand());

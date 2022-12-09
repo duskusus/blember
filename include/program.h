@@ -7,7 +7,7 @@ class Program{
     Program();
     void attachShader(Shader &s);
     void link();   
-    void use();
+    void use() const;
     void getAttribute();
     GLuint getID(); 
 };

@@ -54,13 +54,13 @@ class NewChunk {
     uint32_t instanceBuffer = 0;
     uint32_t indexBuffer = 0;
     uint32_t vao = 0;
-    const Program &sp;
+    Program &sp;
 
     const int vertPos = 2;
     Uniform &u_model;
 
    public:
-    NewChunk(const Program &p_sp, Uniform &p_model) : sp(p_sp), u_model(p_model)
+    NewChunk(Program &p_sp, Uniform &p_model) : sp(p_sp), u_model(p_model)
     {
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);

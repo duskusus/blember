@@ -4,6 +4,7 @@
 #include <SDL2/SDL_opengl_glext.h>
 
 #include <cstddef>
+
 Program::Program()
 {
     id = glCreateProgram();
@@ -27,14 +28,5 @@ void Program::link()
     }
     printf("Program link successful\n");
 }
-void Program::use() const { 
-  glUseProgram(id); }
-int32_t Program::getAttribute(const char *name) const
-{
-    const int attrib = glGetAttribLocation(id, name);
-    if(attrib < 0) {
-        printf("Could not get attribute %s\n", name);
-    }
-    return attrib;
-}
-GLuint Program::getID() { return id; }
+void Program::use() const { glUseProgram(id); }
+GLuint Program::getID() const { return id; }

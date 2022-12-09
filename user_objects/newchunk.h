@@ -34,6 +34,7 @@ class block {
                               sizeof(block),
                               (const void *)offsetof(block, position));
         glEnableVertexAttribArray(blockPos);
+
         glVertexAttribPointer(blockType, 1, GL_UNSIGNED_INT, GL_FALSE,
                               sizeof(block),
                               (const void *)offsetof(block, type));
@@ -47,7 +48,7 @@ class block {
 class NewChunk {
     block *blocks;
 
-    uint32_t blockCount = 0;
+    uint32_t renderableBlockCount = 0;
     uint32_t vertexBuffer = 0;
     uint32_t instanceBuffer = 0;
     uint32_t indexBuffer = 0;
@@ -66,7 +67,7 @@ class NewChunk {
         glBindVertexArray(vao);
 
         glm::mat4 modelView(1.0);
-        blocks = new block[chunksize];
+        blocks = new block[blockcount];
 
         glGenBuffers(1, &vertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -83,7 +84,7 @@ class NewChunk {
 
         glGenBuffers(1, &instanceBuffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instanceBuffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(block) * blockCount, blocks, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(block) * renderableBlockCount, blocks, GL_STATIC_DRAW);
 
         block::registerType();  // make shader program aware of existence
         // of block type
@@ -92,18 +93,20 @@ class NewChunk {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
     }
 
+    block nullblock;
     block &at(int index)
     {
         if (index > 0 && index < chunksize) {
             return blocks[index];
         }
+        return nullblock;
     }
 
     block &newBlock(const glm::vec3 &position)
     {
-        block &b = blocks[blockCount];
+        block &b = blocks[renderableBlockCount];
         b.position = position;
-        blockCount++;
+        renderableBlockCount++;
         return b;
     }
 
@@ -113,7 +116,8 @@ class NewChunk {
         sp.use();
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
-        glDrawElementsInstanced(GL_LINES, 6 * 2 * 3, GL_UNSIGNED_INT, 0, blockCount);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+        glDrawElementsInstanced(GL_LINES, 6 * 2 * 3, GL_UNSIGNED_INT, 0, renderableBlockCount);
     }
 
     void sync()

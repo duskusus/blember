@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     auto start = std::chrono::steady_clock::now();
     auto last_frame = start;
     while (c.poll() == 1) {
-
+    c.swap();
         u_view.set((void *)glm::value_ptr(view));
 
         auto now = std::chrono::steady_clock::now();
@@ -81,6 +81,7 @@ int main(int argc, char **argv)
         //render here
         nc.render();
 
+        
         glm::vec4 move = glm::vec4(0.0);
         
         if (c.keys->at(SDLK_w)) {
@@ -111,7 +112,7 @@ int main(int argc, char **argv)
         move = inview * move;
         camera += move;
         view = glm::translate(view, glm::vec3(camera.x, camera.y, camera.z));
-        c.swap();
+       
     }
     return 0;
 }

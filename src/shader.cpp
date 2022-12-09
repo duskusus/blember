@@ -25,6 +25,7 @@ Shader::Shader(std::string filepath, GLenum shaderType) {
     glDeleteShader(id);
     return;
   }
+  file.close();
 }
 GLuint Shader::getID() {
     return id;

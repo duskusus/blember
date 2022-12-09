@@ -5,16 +5,20 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_stdinc.h>
+#include <exception>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 #include <iostream>
 #include <string>
+#include <signal.h>
 
 #include "glError.h"
+
 Context::Context(std::string windowName, uint16_t width, uint16_t height)
     : width(width), height(height)
 {
+
     keycount = sizeof(keysToPoll) / sizeof(SDL_Keycode);
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED,
@@ -23,7 +27,6 @@ Context::Context(std::string windowName, uint16_t width, uint16_t height)
     context = SDL_GL_CreateContext(window);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    swap();
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,

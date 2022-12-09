@@ -8,6 +8,6 @@ class Program{
     void attachShader(Shader &s);
     void link();   
     void use() const;
-    void getAttribute();
-    GLuint getID(); 
+    int32_t getAttribute(const char *name);
+    GLuint getID() const; 
 };

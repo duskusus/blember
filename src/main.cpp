@@ -5,22 +5,24 @@
 
 #include "chunk.h"
 #include "includes.h"
+#include "newchunk.h"
 #include "testmodel.h"
 #include "testplane.h"
-#include "newchunk.h"
 
-float frand(float min = 0.0, float max = 1.0) {
+float frand(float min = 0.0, float max = 1.0)
+{
     float f = float(rand()) / float(RAND_MAX);
     return f * (max - min) + min;
 }
 
-glm::vec3 v3rand() {
+glm::vec3 v3rand()
+{
     return glm::vec3(frand(0, 100), frand(0, 100), frand(0, 100));
 }
 
 int main(int argc, char **argv)
 {
-
+    srand(time(NULL));
     Context c("blember", 1920, 1080);
     c.showFrameInfo = false;
     Shader v("res/shaders/clean.vert", GL_VERTEX_SHADER);
@@ -34,7 +36,7 @@ int main(int argc, char **argv)
 
     float fov = glm::radians(90.0);
 
-    auto view = glm::mat4(1.0f);
+    auto view = glm::mat4(10.0f);
 
     view = glm::translate(view, glm::vec3(0.0, 0, 0));
 
@@ -47,21 +49,23 @@ int main(int argc, char **argv)
 
     u_proj.set((void *)glm::value_ptr(proj));
     glm::mat4 identity = glm::identity<glm::mat4>();
-    u_model.set((void*)glm::value_ptr(identity));
+    u_model.set((void *)glm::value_ptr(identity));
 
-    glm::vec4 camera = glm::vec4(5.0);
+    glm::vec4 camera = glm::vec4(0.0);
 
-    NewChunk nc(p, u_model);
-
-    for(int i = 0; i < 100; i++) {
-        nc.newBlock(glm::vec3(0.0, 0.0, 5.0 * i));
+    NewChunk nc(p, u_model,  1200);
+    nc.generate();
+    int max = 0;
+    for(int i = 0; i < nc.renderableBlockCount; i++) {
+        if(nc.at(i).type > max) max = nc.at(i).type;
     }
+    std::cout << "Min: " << max << std::endl;
     nc.sync();
 
     auto start = std::chrono::steady_clock::now();
     auto last_frame = start;
     while (c.poll() == 1) {
-    c.swap();
+        c.swap();
         u_view.set((void *)glm::value_ptr(view));
 
         auto now = std::chrono::steady_clock::now();
@@ -78,29 +82,28 @@ int main(int argc, char **argv)
             1000000.0;
         u_time.set(&elapsed);
 
-        //render here
+        // render here 
         nc.render();
 
-        
         glm::vec4 move = glm::vec4(0.0);
-        
+        float positionIncrement = 2.0 * deltaTime / 0.01667;
         if (c.keys->at(SDLK_w)) {
-            move.z += 1.0;
+            move.z += positionIncrement;
         }
         if (c.keys->at(SDLK_s)) {
-            move.z += -1.0;
+            move.z -= positionIncrement;
         }
         if (c.keys->at(SDLK_a)) {
-            move.x += 1.0;
+            move.x += positionIncrement;
         }
         if (c.keys->at(SDLK_d)) {
-            move.x -= 1.0;
+            move.x -= positionIncrement;
         }
         if (c.keys->at(SDLK_SPACE)) {
-            move.y -= 1.0;
+            move.y -= positionIncrement;
         }
         if (c.keys->at(SDLK_LCTRL)) {
-            move.y += 1.0;
+            move.y += positionIncrement;
         }
         if (c.keys->at(SDLK_ESCAPE)) {
             break;
@@ -112,7 +115,6 @@ int main(int argc, char **argv)
         move = inview * move;
         camera += move;
         view = glm::translate(view, glm::vec3(camera.x, camera.y, camera.z));
-       
     }
     return 0;
 }

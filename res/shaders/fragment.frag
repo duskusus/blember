@@ -20,6 +20,5 @@ void main() {
     float brightness = 1.0;
     float distanceToCenter = length(gl_FragCoord.xy - vec2(1920 / 2, 1080 / 2)) / (gl_FragCoord.z * 150.0);
     //brightness /= distanceToCenter;
-    brightness = clamp(brightness, 0.0, 1.0);
-    LFragment = vec4(hsv2rgb(vec3(blockColor.x, 1.0, brightness)), blockColor.w);
+s    LFragment = vec4(hsv2rgb(vec3(blockColor.x, 1.0, brightness)), blockColor.w);
 }

@@ -20,8 +20,12 @@ vec3 hsv2rgb(vec3 c)
 }
 void main()
 {
+
+
 	worldPos = vertPos + blockPosition;
 	gl_Position = proj * view * model * vec4(worldPos,  1.0);
-	float a = float(blockType) * 1e-9 - 0.8;
-	blockColor = hsv2rgb(vec3(float(blockType + uint(20)) *2e-8, 0.91, 0.50));
+	blockColor = hsv2rgb(vec3(float(blockType) * 2e-8, 1.0, 1.0));
+	if(blockPosition.y < 0){
+		blockColor = vec3(0.0, 0.0, 1.0);
+	}
 }

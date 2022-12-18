@@ -23,7 +23,7 @@ glm::vec3 v3rand()
 int main(int argc, char **argv)
 {
     srand(time(NULL));
-    Context c("blember", 1920, 1080);
+    Context c("blember", 1280, 720);
     c.showFrameInfo = false;
     Shader v("res/shaders/clean.vert", GL_VERTEX_SHADER);
     Shader f("res/shaders/clean.frag", GL_FRAGMENT_SHADER);
@@ -36,7 +36,7 @@ int main(int argc, char **argv)
 
     float fov = glm::radians(90.0);
 
-    auto view = glm::mat4(10.0f);
+    auto view = glm::mat4(1.0f);
 
     view = glm::translate(view, glm::vec3(0.0, 0, 0));
 
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
     glm::vec4 camera = glm::vec4(0.0);
 
-    NewChunk nc(p, u_model,  1200);
+    NewChunk nc(p, u_model,  1000);
     nc.generate();
     int max = 0;
     for(int i = 0; i < nc.renderableBlockCount; i++) {

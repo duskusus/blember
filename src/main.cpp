@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
     glm::vec4 camera = glm::vec4(0.0);
 
-    NewChunk nc(p, u_model,  1000);
+    NewChunk nc(p, u_model,  400);
     nc.generate();
     int max = 0;
     for(int i = 0; i < nc.renderableBlockCount; i++) {
@@ -66,7 +66,6 @@ int main(int argc, char **argv)
     auto last_frame = start;
     while (c.poll() == 1) {
         c.swap();
-        u_view.set((void *)glm::value_ptr(view));
 
         auto now = std::chrono::steady_clock::now();
 
@@ -85,36 +84,9 @@ int main(int argc, char **argv)
         // render here 
         nc.render();
 
-        glm::vec4 move = glm::vec4(0.0);
-        float positionIncrement = 2.0 * deltaTime / 0.01667;
-        if (c.keys->at(SDLK_w)) {
-            move.z += positionIncrement;
-        }
-        if (c.keys->at(SDLK_s)) {
-            move.z -= positionIncrement;
-        }
-        if (c.keys->at(SDLK_a)) {
-            move.x += positionIncrement;
-        }
-        if (c.keys->at(SDLK_d)) {
-            move.x -= positionIncrement;
-        }
-        if (c.keys->at(SDLK_SPACE)) {
-            move.y -= positionIncrement;
-        }
-        if (c.keys->at(SDLK_LCTRL)) {
-            move.y += positionIncrement;
-        }
-        if (c.keys->at(SDLK_ESCAPE)) {
-            break;
-        }
-        view = glm::mat4(1.0);
-        view = glm::rotate(view, c.mouse.y, glm::vec3(1.0, 0.0, 0.0));
-        view = glm::rotate(view, c.mouse.x, glm::vec3(0.0, 1.0, 0.0));
-        glm::mat4 inview = glm::inverse(view);
-        move = inview * move;
-        camera += move;
-        view = glm::translate(view, glm::vec3(camera.x, camera.y, camera.z));
+        c.control_view(view, camera, deltaTime);
+        u_view.set((void *)glm::value_ptr(view));
+
     }
     return 0;
 }

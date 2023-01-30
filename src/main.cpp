@@ -23,7 +23,7 @@ glm::vec3 v3rand()
 int main(int argc, char **argv)
 {
     srand(time(NULL));
-    Context c("blember", 1280, 720);
+    Context c("blember", 1920, 1080);
     c.showFrameInfo = false;
     Shader v("res/shaders/clean.vert", GL_VERTEX_SHADER);
     Shader f("res/shaders/clean.frag", GL_FRAGMENT_SHADER);
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 
     glm::vec4 camera = glm::vec4(0.0);
 
-    NewChunk nc(p, u_model,  400);
+    NewChunk nc(p, u_model,  800);
     nc.generate();
     int max = 0;
     for(int i = 0; i < nc.renderableBlockCount; i++) {
@@ -84,7 +84,17 @@ int main(int argc, char **argv)
         // render here 
         nc.render();
 
-        c.control_view(view, camera, deltaTime);
+        if(c.keys->at(SDLK_r)) {
+            srand(time(NULL));
+            nc.generate();
+            nc.sync();
+        }
+
+        if(c.flying){
+            c.fly_control_view(view, camera, deltaTime);
+            }else{
+                c.walk_control_view(view, camera, deltaTime, nc);
+            }
         u_view.set((void *)glm::value_ptr(view));
 
     }

@@ -1,4 +1,5 @@
 #include "newchunk.h"
+
 #include "cube.h"
 NewChunk::NewChunk(Program &p_sp, Uniform &p_model, uint32_t p_chunksize)
     : sp(p_sp), u_model(p_model), chunksize(p_chunksize)
@@ -32,6 +33,7 @@ NewChunk::NewChunk(Program &p_sp, Uniform &p_model, uint32_t p_chunksize)
 
 void NewChunk::generate()
 {
+    if(heightmap) delete[] heightmap;
     heightmap = new int[colcount]{1};
 
     slowNoise();
@@ -40,6 +42,8 @@ void NewChunk::generate()
     normalizeHeightmap();
     clear();
 
+
+    // fill in holes
     for (int x = 0; x < chunksize; x++) {
         for (int z = 0; z < chunksize; z++) {
             int neighbors[4];
@@ -66,8 +70,7 @@ void NewChunk::generate()
 }
 void NewChunk::convolveHeightmap()
 {
-    uint32_t kwid = 40;
-    uint32_t kwidVariance = 1;
+    uint32_t kwid = 75;
 
     int *new_heightmap = new int[colcount]{1};
 
@@ -75,9 +78,8 @@ void NewChunk::convolveHeightmap()
         for (int y = 0; y < chunksize; y++) {
             int total = 0;
             uint32_t blocks_sampled = 0;
-            uint32_t lkwid = kwid + rand() % kwidVariance - kwidVariance / 2;
-            for (int i = 0; i < lkwid; i++) {
-                for (int j = 0; j < lkwid; j++) {
+            for (int i = 0; i < kwid; i++) {
+                for (int j = 0; j < kwid; j++) {
                     int *h =
                         getHeightmapPtr(x + i - kwid / 2, y + j - kwid / 2);
                     if (h) {
@@ -130,7 +132,7 @@ inline int *NewChunk::getHeightmapPtr(int x, int y)
     return NewChunk::getHeightmapPtr(x, y, heightmap);
 }
 
-inline int NewChunk::getHeightmapVal(int x, int y)
+int NewChunk::getHeightmapVal(int x, int y)
 {
     int *h = getHeightmapPtr(x, y);
     if (h) return *h;
@@ -146,25 +148,28 @@ inline int *NewChunk::getHeightmapPtr(int x, int y, int *h)
 
 block &NewChunk::at(int index)
 {
-	if(index <= renderableBlockCount)
-	{
-		return blocks[index];
-	}
-	return nullblock;
+    if (index == renderableBlockCount) {
+        return blocks[index];
+    }
+    return nullblock;
 }
 
 void NewChunk::slowNoise()
 {
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 10; i++) {
         const int disturbMagnitude = 1;
-        const float sloperange = 0.4;
+        const float sloperange = 0.25;
 
         int x = rand() % chunksize;
         int y = rand() % chunksize;
 
-        int disturbSize = rand() % chunksize;
-        int disturbHeight = rand() % disturbMagnitude;
+        int disturbSizeX = rand() % chunksize;
+        int disturbSizeY = rand() % chunksize;
+
+        int disturbHeight = rand() % disturbMagnitude - disturbMagnitude / 2;
+
         float disturbAngle = float(rand()) / float(RAND_MAX) * 0.1 * M_PI;
+
         float cosDisturbAngle = cos(disturbAngle);
         float sinDisturbAngle = sin(disturbAngle);
         float disturbSlopeX =
@@ -172,10 +177,10 @@ void NewChunk::slowNoise()
         float disturbSlopeY =
             float(rand()) / float(RAND_MAX) * sloperange - sloperange / 2.0;
 
-        for (int q = 0; q < disturbSize; q++) {
-            for (int p = 0; p < disturbSize; p++) {
-                float xx = q - disturbSize / 2 + float(x);
-                float yy = p - disturbSize / 2 + float(y);
+        for (int q = 0; q < disturbSizeX; q++) {
+            for (int p = 0; p < disturbSizeY; p++) {
+                float xx = q - disturbSizeX / 2 + float(x);
+                float yy = p - disturbSizeY / 2 + float(y);
 
                 xx = xx * cosDisturbAngle - yy * sinDisturbAngle;
                 yy = xx * sinDisturbAngle + yy * cosDisturbAngle;
@@ -193,10 +198,14 @@ void NewChunk::clear() { renderableBlockCount = 0; }
 
 block &NewChunk::newBlock(const glm::vec3 position)
 {
+    if (renderableBlockCount < blockcount - 1) renderableBlockCount++;
+
     block &b = at(renderableBlockCount);
     b.position = position;
-    b.type = int(position.y + rand() % 50);
-    if (renderableBlockCount < blockcount - 1) renderableBlockCount++;
+    b.type = int(position.y + rand() % 30);
+    if(b.type > 100) {
+        b.type = 200;
+    }
     return b;
 }
 

@@ -18,6 +18,7 @@ void main()
     vec3 normal = normalize(cross(dFdx(worldPos), dFdy(worldPos)));
     float brightness = dot(normal, lightDirection);
     brightness = clamp(brightness * brightness, 0.2, 1.0);
+    if(worldPos.y < 0) brightness = 1.0;
     //float brightness = 1.0;
 
 	LFragment = vec4(blockColor * brightness, 1.0);

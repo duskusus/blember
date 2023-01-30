@@ -9,10 +9,13 @@
 #include "vertexbuffer.h"
 #include <unordered_map>
 #include <glm/glm.hpp>
+
+#include "uniform.h"
 class Context {
     public:
     SDL_Window *window = nullptr;
     SDL_GLContext context = nullptr;
+    Uint64 frames = 0;
     const unsigned short height;
     const unsigned short width;
     float sensitivity = 2.5;
@@ -33,4 +36,5 @@ class Context {
     Context(std::string name, uint16_t width, uint16_t height);
     void swap();
     int poll();
+    void fly_control_view(glm::mat4 &view, glm::vec4 &position, const float deltaTime);
 };

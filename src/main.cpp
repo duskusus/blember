@@ -23,7 +23,7 @@ glm::vec3 v3rand()
 int main(int argc, char **argv)
 {
     srand(time(NULL));
-    Context c("blember", 1920, 1080);
+    Context c("blember", 1280, 720);
     c.showFrameInfo = false;
     Shader v("res/shaders/clean.vert", GL_VERTEX_SHADER);
     Shader f("res/shaders/clean.frag", GL_FRAGMENT_SHADER);
@@ -41,31 +41,34 @@ int main(int argc, char **argv)
     view = glm::translate(view, glm::vec3(0.0, 0, 0));
 
     glm::mat4 proj = glm::perspective(90.0, 1280.0 / 720.0, 0.01, 100000.0);
+    float waterlevel = 100.0;
 
     Uniform u_model("model", p, (void *)glUniformMatrix4fv);
     Uniform u_view("view", p, (void *)glUniformMatrix4fv);
     Uniform u_proj("proj", p, (void *)glUniformMatrix4fv);
     Uniform u_time("time", p, (void *)glUniform1f);
+    Uniform u_waterlevel("waterlevel", p, (void *)glUniform1f);
 
     u_proj.set((void *)glm::value_ptr(proj));
     glm::mat4 identity = glm::identity<glm::mat4>();
     u_model.set((void *)glm::value_ptr(identity));
 
     glm::vec4 camera = glm::vec4(0.0);
-
-    NewChunk nc(p, u_model,  800);
+    u_waterlevel.set(&waterlevel);
+    NewChunk nc(p, u_model, 1414);
     nc.generate();
+    waterlevel = nc.averageBlockHeight + 100;
+    u_waterlevel.set(&waterlevel);
+    std::cout << nc.at(0).position.y << std::endl;
     int max = 0;
-    for(int i = 0; i < nc.renderableBlockCount; i++) {
-        if(nc.at(i).type > max) max = nc.at(i).type;
-    }
-    std::cout << "Min: " << max << std::endl;
     nc.sync();
 
     auto start = std::chrono::steady_clock::now();
     auto last_frame = start;
+    float elapsed;
+    p.use();
+    glEnable(GL_DEPTH_TEST);
     while (c.poll() == 1) {
-        c.swap();
 
         auto now = std::chrono::steady_clock::now();
 
@@ -75,28 +78,30 @@ int main(int argc, char **argv)
                           1000000.0;
         last_frame = now;
 
-        float elapsed =
+        elapsed =
             std::chrono::duration_cast<std::chrono::microseconds>(now - start)
                 .count() /
             1000000.0;
+        if (c.flying) {
+            c.fly_control_view(view, camera, deltaTime);
+        }
+        else {
+            c.walk_control_view(view, camera, deltaTime, nc);
+        }
+        u_view.set((void *)glm::value_ptr(view));
         u_time.set(&elapsed);
-
-        // render here 
+        // render here
         nc.render();
 
-        if(c.keys->at(SDLK_r)) {
+        if (c.keys->at(SDLK_r)) {
             srand(time(NULL));
             nc.generate();
             nc.sync();
         }
 
-        if(c.flying){
-            c.fly_control_view(view, camera, deltaTime);
-            }else{
-                c.walk_control_view(view, camera, deltaTime, nc);
-            }
-        u_view.set((void *)glm::value_ptr(view));
-
+        c.swap();
     }
+    std::cout << "Average Frametime: " << elapsed * 1000 / c.frames
+              << " Framerate: " << c.frames / elapsed << std::endl;
     return 0;
 }

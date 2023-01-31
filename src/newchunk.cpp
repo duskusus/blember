@@ -36,16 +36,18 @@ void NewChunk::generate()
     if(heightmap) delete[] heightmap;
     heightmap = new int[colcount]{1};
 
-    slowNoise();
-    fastNoise();
-    convolveHeightmap();
+    slowNoise(1, 100, 200, 50);
+    slowNoise(0.2, 100, chunksize, chunksize);
+    slowNoise(0.4, 10, chunksize, 1);
+    //fastNoise();
+    convolveHeightmap(40);
     normalizeHeightmap();
     clear();
 
 
     // fill in holes
-    for (int x = 0; x < chunksize; x++) {
-        for (int z = 0; z < chunksize; z++) {
+    for (int x = 1; x < chunksize - 1; x++) {
+        for (int z = 1; z < chunksize - 1; z++) {
             int neighbors[4];
 
             int p = getHeightmapVal(x, z);
@@ -68,9 +70,8 @@ void NewChunk::generate()
         }
     }
 }
-void NewChunk::convolveHeightmap()
+void NewChunk::convolveHeightmap(uint32_t kwid)
 {
-    uint32_t kwid = 75;
 
     int *new_heightmap = new int[colcount]{1};
 
@@ -121,7 +122,8 @@ void NewChunk::normalizeHeightmap()
         sum += heightmap[i];
     }
     const int avg = int(float(sum) / float(blockcount) + 0.5);
-    const int offset = avg;
+    const int offset = min;
+    averageBlockHeight = min;
     for (int i = 0; i < colcount; i++) {
         heightmap[i] -= offset;
     }
@@ -154,41 +156,34 @@ block &NewChunk::at(int index)
     return nullblock;
 }
 
-void NewChunk::slowNoise()
+void NewChunk::slowNoise(const float sloperange, int count, const int sizeOffset, const int sizeRange)
 {
-    for (int i = 0; i < 10; i++) {
-        const int disturbMagnitude = 1;
-        const float sloperange = 0.25;
+    for (int i = 0; i < count; i++) {
 
-        int x = rand() % chunksize;
-        int y = rand() % chunksize;
+        int x = rand() % chunksize - chunksize / 2;
+        int y = rand() % chunksize - chunksize / 2;
 
-        int disturbSizeX = rand() % chunksize;
-        int disturbSizeY = rand() % chunksize;
+        int disturbSizeX = rand() % sizeRange + sizeOffset;
+        int disturbSizeY = rand() % sizeRange + sizeOffset;
 
-        int disturbHeight = rand() % disturbMagnitude - disturbMagnitude / 2;
-
-        float disturbAngle = float(rand()) / float(RAND_MAX) * 0.1 * M_PI;
-
-        float cosDisturbAngle = cos(disturbAngle);
-        float sinDisturbAngle = sin(disturbAngle);
         float disturbSlopeX =
             float(rand()) / float(RAND_MAX) * sloperange - sloperange / 2.0;
         float disturbSlopeY =
             float(rand()) / float(RAND_MAX) * sloperange - sloperange / 2.0;
+        
+        disturbSlopeX *= disturbSlopeX;
+        disturbSlopeY *= disturbSlopeY;
 
-        for (int q = 0; q < disturbSizeX; q++) {
-            for (int p = 0; p < disturbSizeY; p++) {
-                float xx = q - disturbSizeX / 2 + float(x);
-                float yy = p - disturbSizeY / 2 + float(y);
+        for (int q = -disturbSizeX / 2; q < disturbSizeX / 2; q++) {
+            for (int p = -disturbSizeY / 2; p < disturbSizeY / 2; p++) {
 
-                xx = xx * cosDisturbAngle - yy * sinDisturbAngle;
-                yy = xx * sinDisturbAngle + yy * cosDisturbAngle;
+                int xx = p + x;
+                int yy = q + y;
 
                 int *h = getHeightmapPtr(xx, yy);
                 if (h) {
-                    *h += disturbHeight + xx * disturbSlopeX +
-                          yy * disturbSlopeY + 0.5;
+                    *h += p * disturbSlopeX +
+                          q * disturbSlopeY + 0.5;
                 }
             }
         }
@@ -202,19 +197,13 @@ block &NewChunk::newBlock(const glm::vec3 position)
 
     block &b = at(renderableBlockCount);
     b.position = position;
-    b.type = int(position.y + rand() % 30);
-    if(b.type > 100) {
-        b.type = 200;
-    }
+    b.type = b.position.y + rand() % 20;
     return b;
 }
 
 void NewChunk::render()
 {
     glBindVertexArray(vao);
-    sp.use();
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
     glDrawElementsInstanced(GL_TRIANGLES, 6 * 2 * 3, GL_UNSIGNED_INT, 0,
                             renderableBlockCount);

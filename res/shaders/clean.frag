@@ -3,7 +3,7 @@
 flat in vec3 blockColor;
 varying vec3 worldPos;
 uniform float time;
-
+uniform float waterlevel;
 out vec4 LFragment;
 
 vec3 hsv2rgb(vec3 c)
@@ -18,7 +18,11 @@ void main()
     vec3 normal = normalize(cross(dFdx(worldPos), dFdy(worldPos)));
     float brightness = dot(normal, lightDirection);
     brightness = clamp(brightness * brightness, 0.2, 1.0);
-    if(worldPos.y < 0) brightness = 1.0;
+    if(worldPos.y < waterlevel)
+    {
+        LFragment = vec4(vec3(0.0, 0.0, 1.0), 1.0);
+        return;
+    }
     //float brightness = 1.0;
 
 	LFragment = vec4(blockColor * brightness, 1.0);

@@ -37,7 +37,7 @@ Context::Context(std::string windowName, uint16_t width, uint16_t height)
     glewInit();
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, 0);
-
+    glEnable(GL_CULL_FACE);
     // SDL_SetRelativeMouseMode(SDL_TRUE);
 
     keys = new std::unordered_map<SDL_Keycode, bool>;
@@ -64,6 +64,7 @@ int Context::poll()
                 if (e.key.keysym.sym == keysToPoll[i])
                     keys->at(keysToPoll[i]) = true;
             }
+            if (e.key.keysym.sym == SDLK_ESCAPE) return 0;
         }
         else if (e.type == SDL_KEYUP) {
             for (unsigned int i = 0; i < keycount; i++) {
@@ -110,11 +111,8 @@ void Context::fly_control_view(glm::mat4 &view, glm::vec4 &camera,
     if (keys->at(SDLK_LCTRL)) {
         move.y += positionIncrement;
     }
-    if(keys->at(SDLK_t)) {
+    if (keys->at(SDLK_t)) {
         flying = false;
-    }
-    if (keys->at(SDLK_ESCAPE)) {
-        exit(0);
     }
     view = glm::mat4(1.0);
     view = glm::rotate(view, mouse.y, glm::vec3(1.0, 0.0, 0.0));
@@ -144,18 +142,18 @@ void Context::walk_control_view(glm::mat4 &view, glm::vec4 &camera,
     if (keys->at(SDLK_t)) {
         flying = true;
     }
-    if (keys->at(SDLK_ESCAPE)) {
-        exit(0);
-    }
 
     view = glm::mat4(1.0);
     view = glm::rotate(view, mouse.y, glm::vec3(1.0, 0.0, 0.0));
     view = glm::rotate(view, mouse.x, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 inview = glm::inverse(view);
     move = inview * move;
-    
+
     camera += move;
-    camera.y = -4.0 - world.getHeightmapVal(-int(camera.x + 0.5), -int(camera.z + 0.5));
-    if(move.length() > 0.0) std::cout << "x " << camera.x << " y " << camera.y << " z " << camera.z << std::endl;
+    camera.y = -4.0 - world.getHeightmapVal(-int(camera.x + 0.5),
+                                            -int(camera.z + 0.5));
+    if (move.length() > 0.0)
+        std::cout << "x " << camera.x << " y " << camera.y << " z " << camera.z
+                  << std::endl;
     view = glm::translate(view, glm::vec3(camera.x, camera.y, camera.z));
 }

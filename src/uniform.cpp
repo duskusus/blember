@@ -6,6 +6,5 @@ Uniform::Uniform(std::string name, Program &p_program, void *p_setFunc) : p(p_pr
     setFunc = (void (*)(GLint, GLsizei, GLboolean, void*)) p_setFunc;
 }
 void Uniform::set(void *value) {
-    p.use();
     setFunc(location, 1, GL_FALSE, value);
 }

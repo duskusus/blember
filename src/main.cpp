@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 
     glm::vec4 camera = glm::vec4(0.0);
     u_waterlevel.set(&waterlevel);
-    NewChunk nc(p, u_model, 1414);
+    NewChunk nc(p, u_model, 800);
     nc.generate();
     waterlevel = nc.averageBlockHeight + 100;
     u_waterlevel.set(&waterlevel);

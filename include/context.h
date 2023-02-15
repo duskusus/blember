@@ -24,6 +24,7 @@ class Context {
     unsigned int keycount;
     bool showFrameInfo = true;
     bool captureMouse = true;
+    SDL_Renderer *renderer = nullptr;
     glm::vec2 mouse = glm::vec2(0);
     SDL_Keycode keysToPoll[9] = {
         SDLK_w,

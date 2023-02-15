@@ -4,6 +4,7 @@
 #include <GL/glu.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
 #include <signal.h>
 
@@ -27,6 +28,8 @@ Context::Context(std::string windowName, uint16_t width, uint16_t height)
                               SDL_WINDOWPOS_UNDEFINED, width, height,
                               SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     context = SDL_GL_CreateContext(window);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if(renderer == NULL) printf("Could not create renderer\n");
     glClearColor(0.4235, 0.851, 1.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);

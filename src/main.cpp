@@ -1,14 +1,17 @@
 #include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <chrono>
 #include <glm/glm.hpp>
+#include <string>
 
 #include "chunk.h"
+#include "context.h"
 #include "includes.h"
 #include "newchunk.h"
 #include "testmodel.h"
 #include "testplane.h"
-
+#include "text.h"
 float frand(float min = 0.0, float max = 1.0)
 {
     float f = float(rand()) / float(RAND_MAX);
@@ -24,6 +27,7 @@ int main(int argc, char **argv)
 {
     srand(time(NULL));
     Context c("blember", 1280, 720);
+    TTF_Init();
     c.showFrameInfo = false;
     Shader v("res/shaders/clean.vert", GL_VERTEX_SHADER);
     Shader f("res/shaders/clean.frag", GL_FRAGMENT_SHADER);
@@ -55,7 +59,7 @@ int main(int argc, char **argv)
 
     glm::vec4 camera = glm::vec4(0.0);
     u_waterlevel.set(&waterlevel);
-    NewChunk nc(p, u_model, 800);
+    NewChunk nc(p, u_model, 400);
     nc.generate();
     waterlevel = nc.averageBlockHeight + 100;
     u_waterlevel.set(&waterlevel);
@@ -63,13 +67,17 @@ int main(int argc, char **argv)
     int max = 0;
     nc.sync();
 
+    TextBox textmessage("ABCDEF", 0, c.height, 48, c);
+
+    textmessage.setfont("res/Helvetica.ttf");
+    textmessage.update();
+
     auto start = std::chrono::steady_clock::now();
     auto last_frame = start;
     float elapsed;
     p.use();
     glEnable(GL_DEPTH_TEST);
     while (c.poll() == 1) {
-
         auto now = std::chrono::steady_clock::now();
 
         float deltaTime = std::chrono::duration_cast<std::chrono::microseconds>(
@@ -92,7 +100,11 @@ int main(int argc, char **argv)
         u_time.set(&elapsed);
         // render here
         nc.render();
-
+        if (fmod(elapsed, 1) < 0.01 ) {
+            textmessage.setText("fps:  " + std::to_string(1.0 / deltaTime));
+            textmessage.update();
+        }
+        textmessage.Draw();
         if (c.keys->at(SDLK_r)) {
             srand(time(NULL));
             nc.generate();

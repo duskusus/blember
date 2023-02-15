@@ -113,7 +113,7 @@ void NewChunk::fastNoise()
 
 void NewChunk::normalizeHeightmap()
 {
-    int min = 0;
+    int min = 9999;
     int sum = 0;
     for (int i = 0; i < colcount; i++) {
         if (heightmap[i] < min) {

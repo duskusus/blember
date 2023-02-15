@@ -63,19 +63,22 @@ class NewChunk {
     const uint32_t blockcount = chunksize * chunksize * stacklimit;
     const uint32_t colcount = chunksize * chunksize;
     int *heightmap = nullptr;
+        int averageBlockHeight = 0;
+
 
     NewChunk(Program &p_sp, Uniform &p_model, uint32_t p_chunksize);
 
     block nullblock;
     block &at(int index);
     void generate();
-    void convolveHeightmap();
+void convolveHeightmap(uint32_t kwid);
     void fastNoise();
     void normalizeHeightmap();
-    inline int *getHeightmapPtr(int x, int y);
-    inline int getHeightmapVal(int x, int y);
-    inline int *getHeightmapPtr(int x, int y, int *h);
-    void slowNoise();
+    int *getHeightmapPtr(int x, int y);
+     int getHeightmapVal(int x, int y);
+     int *getHeightmapPtr(int x, int y, int *h);
+    void slowNoise(const float sloperange, int count, const int sizeOffset, const int sizeRange);
+
     void clear();
     block &newBlock(const glm::vec3 position);
     void render();

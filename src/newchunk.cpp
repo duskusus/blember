@@ -123,13 +123,13 @@ void NewChunk::normalizeHeightmap()
     }
     const int avg = int(float(sum) / float(blockcount) + 0.5);
     const int offset = min;
-    averageBlockHeight = min;
+    averageBlockHeight = avg - min;
     for (int i = 0; i < colcount; i++) {
         heightmap[i] -= offset;
     }
 }
 
-inline int *NewChunk::getHeightmapPtr(int x, int y)
+ int *NewChunk::getHeightmapPtr(int x, int y)
 {
     return NewChunk::getHeightmapPtr(x, y, heightmap);
 }
@@ -141,7 +141,7 @@ int NewChunk::getHeightmapVal(int x, int y)
     return 0;
 }
 
-inline int *NewChunk::getHeightmapPtr(int x, int y, int *h)
+ int *NewChunk::getHeightmapPtr(int x, int y, int *h)
 {
     if (x < 0 || x >= chunksize || y < 0 || y >= chunksize) return NULL;
     const int index = x + y * chunksize;

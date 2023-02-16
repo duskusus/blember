@@ -17,7 +17,7 @@ class block {
    public:
     // position of block and type
     glm::vec3 position;
-    uint32_t type = 0;
+    glm::vec3 type;
 
    private:
     // shader layout locations
@@ -31,7 +31,7 @@ class block {
                               (const void *)offsetof(block, position));
         glEnableVertexAttribArray(blockPos);
 
-        glVertexAttribPointer(blockType, 1, GL_UNSIGNED_INT, GL_FALSE,
+        glVertexAttribPointer(blockType, 3, GL_FLOAT, GL_FALSE,
                               sizeof(block),
                               (const void *)offsetof(block, type));
         glEnableVertexAttribArray(blockType);
@@ -73,6 +73,7 @@ class NewChunk {
     void generate();
 void convolveHeightmap(uint32_t kwid);
     void fastNoise();
+    void trees(int count);
     void normalizeHeightmap();
     int *getHeightmapPtr(int x, int y);
      int getHeightmapVal(int x, int y);
@@ -80,7 +81,8 @@ void convolveHeightmap(uint32_t kwid);
     void slowNoise(const float sloperange, int count, const int sizeOffset, const int sizeRange);
 
     void clear();
-    block &newBlock(const glm::vec3 position);
+    block &newBlock(const glm::vec3 &position);
+    block &newBlock(const glm::vec3 &position, const glm::vec3 &type);
     void render();
     void sync();
     ~NewChunk();

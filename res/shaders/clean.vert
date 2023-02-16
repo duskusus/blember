@@ -1,7 +1,7 @@
 #version 330
 
 layout (location = 0)in vec3 blockPosition; // position of block
-layout (location = 1)in uint blockType; // use to calculate offset into texture
+layout (location = 1)in vec3 blockType; // hsv block values
 layout (location = 2)in vec3 vertPos; //vertex in block
 
 uniform mat4 model;
@@ -24,5 +24,5 @@ void main()
 
 	worldPos = vertPos + blockPosition;
 	gl_Position = proj * view * model * vec4(worldPos,  1.0);
-	blockColor = hsv2rgb(vec3(blockType * 5e-8, 1.0, 1.0));
+	blockColor = hsv2rgb(blockType);
 }

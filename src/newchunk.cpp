@@ -36,7 +36,7 @@ void NewChunk::generate()
     if(heightmap) delete[] heightmap;
     heightmap = new int[colcount]{1};
 
-    slowNoise(1, 50, 500, 250);
+    slowNoise(1, 20, 500, 250);
     slowNoise(1, 100, 200, 50);
     slowNoise(0.2, 100, chunksize, chunksize);
     slowNoise(0.4, 10, chunksize, 1);
@@ -67,6 +67,35 @@ void NewChunk::generate()
             if (p - min > stacklimit) continue;
             for (int h = min; h <= p; h++) {
                 newBlock(glm::vec3(x, h, z));
+            }
+        }
+    }
+
+    trees(999);
+}
+void NewChunk::trees(int count)
+{
+    for(int i = 0; i < count; i++)
+    {
+        int x = rand() % chunksize;
+        int z = rand() % chunksize;
+        int h = getHeightmapVal(x, z);
+
+        int height = 10 + rand() % 40;
+        for(int j = 0; j < height; j++) {
+            newBlock(glm::vec3(x, j + h, z), glm::vec3(30.0 / 360.0, 1.0, 0.2));
+        }
+
+        int leafHeight = 1 + rand() % height;
+
+        int leafWidth = 5 + rand() % 10;
+
+        for(int p = h + height - leafHeight; p < h + height + 3; p++) {
+            for(int q = -leafWidth / 2; q < leafWidth / 2; q++){
+                for(int r = -leafWidth / 2; r < leafWidth / 2; r++) {
+                    glm::vec3 leafColor((95 + float(h) / 10.0) / 360, 1.0, 0.35);
+                    newBlock(glm::vec3(x + q, p, z + r), leafColor);
+                }
             }
         }
     }
@@ -192,13 +221,19 @@ void NewChunk::slowNoise(const float sloperange, int count, const int sizeOffset
 }
 void NewChunk::clear() { renderableBlockCount = 0; }
 
-block &NewChunk::newBlock(const glm::vec3 position)
+block &NewChunk::newBlock(const glm::vec3 &position)
 {
-    if (renderableBlockCount < blockcount - 1) renderableBlockCount++;
+    glm::vec3 type = glm::vec3(float(position.y + rand() % 100) * 1e-3, 1.0, 1.0);
+    block &b = newBlock(position, type);
+    return b;
+}
+block &NewChunk::newBlock(const glm::vec3 &position, const glm::vec3 &type)
+{
+    if (renderableBlockCount < blockcount - 1) renderableBlockCount ++;
 
     block &b = at(renderableBlockCount);
     b.position = position;
-    b.type = b.position.y + rand() % 20;
+    b.type = type;
     return b;
 }
 

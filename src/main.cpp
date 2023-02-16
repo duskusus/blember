@@ -25,7 +25,6 @@ glm::vec3 v3rand()
 
 int main(int argc, char **argv)
 {
-    srand(time(NULL));
     Context c("blember", 1280, 720);
     TTF_Init();
     c.showFrameInfo = false;
@@ -41,7 +40,7 @@ int main(int argc, char **argv)
     float fov = glm::radians(90.0);
 
     auto view = glm::mat4(1.0f);
-
+srand(time(NULL));
     view = glm::translate(view, glm::vec3(0.0, 0, 0));
 
     glm::mat4 proj = glm::perspective(90.0, 1280.0 / 720.0, 0.01, 100000.0);
@@ -58,19 +57,27 @@ int main(int argc, char **argv)
     u_model.set((void *)glm::value_ptr(identity));
 
     glm::vec4 camera = glm::vec4(0.0);
-    u_waterlevel.set(&waterlevel);
-    NewChunk nc(p, u_model, 400);
+
+    TextBox framerate("Console", c.width - 150, c.height, 18, c);
+    framerate.setfont("res/Helvetica.ttf");
+
+    TextBox console("Console Text: ", 0, c.height, 18, c);
+    console.setWidth(150);
+    console.setfont("res/LiberationSans-Regular.ttf");
+    console.setText("Console\n");
+    console.setColor({255, 255, 255, 255}, {0, 0, 0, 0});
+
+    const int seed = (int)time(NULL);
+    console.append("Seed: " + std::to_string(seed) + "\n");
+    console.Draw();
+    c.swap();
+    srand(seed);
+
+    NewChunk nc(p, u_model, 1024);
     nc.generate();
     waterlevel = nc.averageBlockHeight + 100;
     u_waterlevel.set(&waterlevel);
-    std::cout << nc.at(0).position.y << std::endl;
-    int max = 0;
     nc.sync();
-
-    TextBox textmessage("ABCDEF", 0, c.height, 48, c);
-
-    textmessage.setfont("res/Helvetica.ttf");
-    textmessage.update();
 
     auto start = std::chrono::steady_clock::now();
     auto last_frame = start;
@@ -100,20 +107,22 @@ int main(int argc, char **argv)
         u_time.set(&elapsed);
         // render here
         nc.render();
-        if (fmod(elapsed, 1) < 0.01 ) {
-            textmessage.setText("fps:  " + std::to_string(1.0 / deltaTime));
-            textmessage.update();
-        }
-        textmessage.Draw();
+        framerate.setText("fps:  " + std::to_string(float(c.frames) / elapsed));
+        framerate.Draw();
+        console.Draw();
         if (c.keys->at(SDLK_r)) {
-            srand(time(NULL));
+            int seed = time(NULL);
+            console.append("Regenerating world with seed: " + std::to_string(seed) + "\n");
+            srand(seed);
             nc.generate();
             nc.sync();
+            waterlevel = nc.averageBlockHeight + 100;
+            u_waterlevel.set(&waterlevel);
         }
 
         c.swap();
     }
     std::cout << "Average Frametime: " << elapsed * 1000 / c.frames
-              << " Framerate: " << c.frames / elapsed << std::endl;
+              << " framerate: " << c.frames / elapsed << std::endl;
     return 0;
 }

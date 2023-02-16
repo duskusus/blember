@@ -36,11 +36,14 @@ Context::Context(std::string windowName, uint16_t width, uint16_t height)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                         SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetSwapInterval(1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 4);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+    //SDL_GL_SetSwapInterval(1);
     glewInit();
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, 0);
     glEnable(GL_CULL_FACE);
+
     // SDL_SetRelativeMouseMode(SDL_TRUE);
 
     keys = new std::unordered_map<SDL_Keycode, bool>;

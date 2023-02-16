@@ -36,6 +36,7 @@ void NewChunk::generate()
     if(heightmap) delete[] heightmap;
     heightmap = new int[colcount]{1};
 
+    slowNoise(1, 50, 500, 250);
     slowNoise(1, 100, 200, 50);
     slowNoise(0.2, 100, chunksize, chunksize);
     slowNoise(0.4, 10, chunksize, 1);
@@ -113,7 +114,7 @@ void NewChunk::fastNoise()
 
 void NewChunk::normalizeHeightmap()
 {
-    int min = 9999;
+    int min = 999999;
     int sum = 0;
     for (int i = 0; i < colcount; i++) {
         if (heightmap[i] < min) {

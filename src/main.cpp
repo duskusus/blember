@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     float fov = glm::radians(90.0);
 
     auto view = glm::mat4(1.0f);
-srand(time(NULL));
+    srand(time(NULL));
     view = glm::translate(view, glm::vec3(0.0, 0, 0));
 
     glm::mat4 proj = glm::perspective(90.0, 1280.0 / 720.0, 0.01, 100000.0);
@@ -58,8 +58,8 @@ srand(time(NULL));
 
     glm::vec4 camera = glm::vec4(0.0);
 
-    TextBox framerate("Console", c.width - 150, c.height, 18, c);
-    framerate.setfont("res/Helvetica.ttf");
+    TextBox debugInfo("Console", c.width - 400, c.height, 18, c);
+    debugInfo.setfont("res/Helvetica.ttf");
 
     TextBox console("Console Text: ", 0, c.height, 18, c);
     console.setWidth(150);
@@ -73,7 +73,7 @@ srand(time(NULL));
     c.swap();
     srand(seed);
 
-    NewChunk nc(p, u_model, 1024);
+    NewChunk nc(p, u_model, 800);
     nc.generate();
     waterlevel = nc.averageBlockHeight + 100;
     u_waterlevel.set(&waterlevel);
@@ -105,14 +105,47 @@ srand(time(NULL));
         }
         u_view.set((void *)glm::value_ptr(view));
         u_time.set(&elapsed);
+
+        int nearby = 0;
+        glm::mat4 inview = glm::inverse(view);
+        glm::vec4 ray = inview * glm::vec4(0, 0, -1, 0);
+
+        if(c.LMouse){
+        console.append("Break: ");
+        for (int i = 0; i < nc.renderableBlockCount; i++) {
+            block &b = nc.at(i);
+            const glm::vec4 pos =
+                glm::vec4(b.position.x, b.position.y, b.position.z, 0.0) -
+                camera;
+            const float rayval =
+                abs(glm::dot(pos, ray)) / length(pos) * length(ray);
+            if (rayval > 0.99 && glm::length(pos) < 20.0) {
+                nearby++;
+                b = nc.at(nc.renderableBlockCount);
+                nc.renderableBlockCount --;
+            }
+            
+        }
+        console.append(std::to_string(nearby) + "\n");
+        }
+        nc.sync();
+
+        std::string positionInfo =
+            "x: " + std::to_string(camera.x) +
+            " y: " + std::to_string(camera.y) +
+            " z: " + std::to_string(camera.z) + "\n" +
+            "\n Nearby Blocks: " + std::to_string(nearby);
+        debugInfo.setText("fps:  " + std::to_string(float(c.frames) / elapsed) +
+                          "\n" + positionInfo);
         // render here
         nc.render();
-        framerate.setText("fps:  " + std::to_string(float(c.frames) / elapsed));
-        framerate.Draw();
+
+        debugInfo.Draw();
         console.Draw();
         if (c.keys->at(SDLK_r)) {
             int seed = time(NULL);
-            console.append("Regenerating world with seed: " + std::to_string(seed) + "\n");
+            console.append(
+                "Regenerating world with seed: " + std::to_string(seed) + "\n");
             srand(seed);
             nc.generate();
             nc.sync();

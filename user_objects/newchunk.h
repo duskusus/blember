@@ -79,10 +79,11 @@ void convolveHeightmap(uint32_t kwid);
      int getHeightmapVal(int x, int y);
      int *getHeightmapPtr(int x, int y, int *h);
     void slowNoise(const float sloperange, int count, const int sizeOffset, const int sizeRange);
-
+    int verifyNonOverlap();
     void clear();
     block &newBlock(const glm::vec3 &position);
     block &newBlock(const glm::vec3 &position, const glm::vec3 &type);
+    block &noverlapNewBlock(const glm::vec3 &position, const glm::vec3 &type);
     void render();
     void sync();
     ~NewChunk();

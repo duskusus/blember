@@ -1,6 +1,31 @@
 #include "newchunk.h"
-
 #include "cube.h"
+#include <algorithm>
+bool blockGeq(const block &a, const block &b)
+    {
+        glm::vec3 dr = a.position - b.position;
+        if(dr.x > 1.0) return true;
+        if(dr.x < -1.0) return false;
+
+        if(dr.y > 1.0) return true;
+        if(dr.y < -1.0) return false;
+
+        if(dr.z > 1.0) return true;
+        if(dr.z < -1.0) return false;
+        return false;
+
+    }
+bool blockEq(const block &a, const block &b)
+{
+    const float sigmaSquare = 0.25;
+    glm::vec3 dr = a.position - b.position;
+    dr *= dr;
+    if(dr.x > sigmaSquare) return false;
+    if(dr.y > sigmaSquare) return false;
+    if(dr.z > sigmaSquare) return false;
+    return true;
+}
+    
 NewChunk::NewChunk(Program &p_sp, Uniform &p_model, uint32_t p_chunksize)
     : sp(p_sp), u_model(p_model), chunksize(p_chunksize)
 {
@@ -30,14 +55,25 @@ NewChunk::NewChunk(Program &p_sp, Uniform &p_model, uint32_t p_chunksize)
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 }
+int NewChunk::verifyNonOverlap() {
+    int overlappingBlocks = 0;
+    for(int i = 0; i < renderableBlockCount; i++) {
+        const block &b = blocks[i];
+        const block *lower = std::lower_bound(blocks, blocks + renderableBlockCount, b, blockGeq);
+        const block *upper = std::upper_bound(blocks, blocks + renderableBlockCount, b, blockGeq);
 
+        for(const block *j = lower; j < upper; j++) {
+            if(blockEq(b, *j)) overlappingBlocks ++;
+        }
+    }
+    return overlappingBlocks;
+}
 void NewChunk::generate()
 {
     if(heightmap) delete[] heightmap;
     heightmap = new int[colcount]{1};
 
-    slowNoise(1, 20, 500, 250);
-    slowNoise(1, 100, 200, 50);
+    slowNoise(1, 100 + rand() % 50, 500, 50);
     slowNoise(0.2, 100, chunksize, chunksize);
     slowNoise(0.4, 10, chunksize, 1);
     //fastNoise();
@@ -71,30 +107,52 @@ void NewChunk::generate()
         }
     }
 
-    trees(999);
+    trees(2000);
+
+    std::sort(blocks, blocks + renderableBlockCount - 2, blockGeq);
 }
 void NewChunk::trees(int count)
 {
+    std::sort(blocks, blocks + renderableBlockCount, blockGeq);
     for(int i = 0; i < count; i++)
     {
+        
         int x = rand() % chunksize;
         int z = rand() % chunksize;
         int h = getHeightmapVal(x, z);
 
-        int height = 10 + rand() % 40;
-        for(int j = 0; j < height; j++) {
-            newBlock(glm::vec3(x, j + h, z), glm::vec3(30.0 / 360.0, 1.0, 0.2));
+        if(h < averageBlockHeight + 100) {
+            i++;
+            continue;
         }
 
-        int leafHeight = 1 + rand() % height;
+        int height = 10 + rand() % 60;
 
-        int leafWidth = 5 + rand() % 10;
+        for(int j = 0; j < height; j++) {
+            
+            glm::vec3 woodColor(30.0 / 360.0, 1.0, 0.2);
+            newBlock(glm::vec3(x, j + h, z), woodColor);
+            newBlock(glm::vec3(x  + 1, j + h, z), woodColor);
+            newBlock(glm::vec3(x, j + h, z + 1), woodColor);
+            newBlock(glm::vec3(x + 1, j + h, z + 1), woodColor);
+         
+        }
 
-        for(int p = h + height - leafHeight; p < h + height + 3; p++) {
-            for(int q = -leafWidth / 2; q < leafWidth / 2; q++){
-                for(int r = -leafWidth / 2; r < leafWidth / 2; r++) {
+        int leafHeight = 1 + rand() % (height / 2 + 1);
+
+        int outerLeafWidth = 10 + rand() % (leafHeight / 2 + 1);
+
+        for(int p = 0; p < leafHeight + 2; p++) {
+
+            int leafWidth = (outerLeafWidth * (leafHeight - p + 1)) / leafHeight;
+
+            for(int q = -leafWidth / 2; q < leafWidth / 2 + 1; q++){
+
+                for(int r = -leafWidth / 2; r < leafWidth / 2  + 1; r++) {
+
                     glm::vec3 leafColor((95 + float(h) / 10.0) / 360, 1.0, 0.35);
-                    newBlock(glm::vec3(x + q, p, z + r), leafColor);
+
+                    noverlapNewBlock(glm::vec3(x + q, p + h + height - leafHeight, z + r), leafColor);
                 }
             }
         }
@@ -180,7 +238,7 @@ int NewChunk::getHeightmapVal(int x, int y)
 
 block &NewChunk::at(int index)
 {
-    if (index == renderableBlockCount) {
+    if (index <= renderableBlockCount) {
         return blocks[index];
     }
     return nullblock;
@@ -223,7 +281,7 @@ void NewChunk::clear() { renderableBlockCount = 0; }
 
 block &NewChunk::newBlock(const glm::vec3 &position)
 {
-    glm::vec3 type = glm::vec3(float(position.y + rand() % 100) * 1e-3, 1.0, 1.0);
+    glm::vec3 type = glm::vec3(float(position.y + rand() % 200) * 1e-3, 1.0, 1.0);
     block &b = newBlock(position, type);
     return b;
 }
@@ -235,6 +293,10 @@ block &NewChunk::newBlock(const glm::vec3 &position, const glm::vec3 &type)
     b.position = position;
     b.type = type;
     return b;
+}
+block &NewChunk::noverlapNewBlock(const glm::vec3 &position, const glm::vec3 &type)
+{
+    return newBlock(position, type);
 }
 
 void NewChunk::render()

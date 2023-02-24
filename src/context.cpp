@@ -36,8 +36,6 @@ Context::Context(std::string windowName, uint16_t width, uint16_t height)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                         SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 4);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
     //SDL_GL_SetSwapInterval(1);
     glewInit();
     glEnable(GL_DEBUG_OUTPUT);
@@ -61,6 +59,7 @@ void Context::swap()
 }
 int Context::poll()
 {
+    LMouse = false;
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT)
@@ -77,6 +76,9 @@ int Context::poll()
                 if (e.key.keysym.sym == keysToPoll[i])
                     keys->at(keysToPoll[i]) = false;
             }
+        } 
+        else if(e.type == SDL_MOUSEBUTTONDOWN) {
+            LMouse = true;
         }
     }
     int mousex = 0;
@@ -125,8 +127,8 @@ void Context::fly_control_view(glm::mat4 &view, glm::vec4 &camera,
     view = glm::rotate(view, mouse.x, glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 inview = glm::inverse(view);
     move = inview * move;
-    camera += move;
-    view = glm::translate(view, glm::vec3(camera.x, camera.y, camera.z));
+    camera -= move;
+    view = glm::translate(view, - glm::vec3(camera.x, camera.y, camera.z));
 }
 void Context::walk_control_view(glm::mat4 &view, glm::vec4 &camera,
                                 const float deltaTime, NewChunk &world)

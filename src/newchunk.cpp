@@ -1,6 +1,7 @@
 #include "newchunk.h"
 #include "cube.h"
 #include <algorithm>
+
 bool blockGeq(const block &a, const block &b)
     {
         glm::vec3 dr = a.position - b.position;
@@ -37,7 +38,7 @@ NewChunk::NewChunk(Program &p_sp, Uniform &p_model, uint32_t p_chunksize)
 
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(vertPos);
     glVertexAttribPointer(vertPos, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
 
@@ -77,7 +78,7 @@ void NewChunk::generate()
     slowNoise(0.2, 100, chunksize, chunksize);
     slowNoise(0.4, 10, chunksize, 1);
     //fastNoise();
-    convolveHeightmap(40);
+    convolveHeightmap(50);
     normalizeHeightmap();
     clear();
 
@@ -107,9 +108,7 @@ void NewChunk::generate()
         }
     }
 
-    trees(2000);
-
-    std::sort(blocks, blocks + renderableBlockCount - 2, blockGeq);
+    trees(20);
 }
 void NewChunk::trees(int count)
 {

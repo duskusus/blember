@@ -9,9 +9,11 @@
 #include "context.h"
 #include "includes.h"
 #include "newchunk.h"
+#include "newchunk2.h"
 #include "testmodel.h"
 #include "testplane.h"
 #include "text.h"
+
 float frand(float min = 0.0, float max = 1.0)
 {
     float f = float(rand()) / float(RAND_MAX);
@@ -36,7 +38,6 @@ int main(int argc, char **argv)
     p.attachShader(v);
     p.attachShader(f);
     p.link();
-
     float fov = glm::radians(90.0);
 
     auto view = glm::mat4(1.0f);
@@ -60,7 +61,8 @@ int main(int argc, char **argv)
 
     TextBox debugInfo("Console", c.width - 400, c.height, 18, c);
     debugInfo.setfont("res/Helvetica.ttf");
-
+    NewChunk nc(p, u_model, 800);
+    nc.generate();
     TextBox console("Console Text: ", 0, c.height, 18, c);
     console.setWidth(150);
     console.setfont("res/LiberationSans-Regular.ttf");
@@ -73,17 +75,13 @@ int main(int argc, char **argv)
     c.swap();
     srand(seed);
 
-    NewChunk nc(p, u_model, 800);
-    nc.generate();
-    waterlevel = nc.averageBlockHeight + 100;
-    u_waterlevel.set(&waterlevel);
-    nc.sync();
-
+    int * heightmap = new int[255 * 255];
+    for(int i = 0; i < 255 * 255; i++) {
+        heightmap[i] = rand() % 255;
+    }
     auto start = std::chrono::steady_clock::now();
     auto last_frame = start;
     float elapsed;
-    p.use();
-    glEnable(GL_DEPTH_TEST);
     while (c.poll() == 1) {
         auto now = std::chrono::steady_clock::now();
 
@@ -100,59 +98,18 @@ int main(int argc, char **argv)
         if (c.flying) {
             c.fly_control_view(view, camera, deltaTime);
         }
-        else {
-            c.walk_control_view(view, camera, deltaTime, nc);
-        }
         u_view.set((void *)glm::value_ptr(view));
         u_time.set(&elapsed);
-
-        int nearby = 0;
-        glm::mat4 inview = glm::inverse(view);
-        glm::vec4 ray = inview * glm::vec4(0, 0, -1, 0);
-
-        if(c.LMouse){
-        console.append("Break: ");
-        for (int i = 0; i < nc.renderableBlockCount; i++) {
-            block &b = nc.at(i);
-            const glm::vec4 pos =
-                glm::vec4(b.position.x, b.position.y, b.position.z, 0.0) -
-                camera;
-            const float rayval =
-                abs(glm::dot(pos, ray)) / length(pos) * length(ray);
-            if (rayval > 0.99 && glm::length(pos) < 20.0) {
-                nearby++;
-                b = nc.at(nc.renderableBlockCount);
-                nc.renderableBlockCount --;
-            }
-            
-        }
-        console.append(std::to_string(nearby) + "\n");
-        }
-        nc.sync();
 
         std::string positionInfo =
             "x: " + std::to_string(camera.x) +
             " y: " + std::to_string(camera.y) +
-            " z: " + std::to_string(camera.z) + "\n" +
-            "\n Nearby Blocks: " + std::to_string(nearby);
+            " z: " + std::to_string(camera.z);
         debugInfo.setText("fps:  " + std::to_string(float(c.frames) / elapsed) +
                           "\n" + positionInfo);
         // render here
+   
         nc.render();
-
-        debugInfo.Draw();
-        console.Draw();
-        if (c.keys->at(SDLK_r)) {
-            int seed = time(NULL);
-            console.append(
-                "Regenerating world with seed: " + std::to_string(seed) + "\n");
-            srand(seed);
-            nc.generate();
-            nc.sync();
-            waterlevel = nc.averageBlockHeight + 100;
-            u_waterlevel.set(&waterlevel);
-        }
-
         c.swap();
     }
     std::cout << "Average Frametime: " << elapsed * 1000 / c.frames

@@ -11,12 +11,8 @@ inline uint32_t convertIndex(int x, int y, int z)
 {
     return ((x & 0xff) << 16) | ((y & 0xff) << 8) | (z & 0xff);
 }
-NewChunk2::NewChunk2(int xOffset, int yOffset, int zOffset, int *p_heightmap, Program &p_p)
-    : heightmapXOffset(xOffset),
-      heightmapYOffset(yOffset),
-      heightmapZOffset(zOffset),
-      heightmap(p_heightmap),
-      p(p_p)
+NewChunk2::NewChunk2(Program &p_p)
+    : p(p_p)
 {
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -35,7 +31,7 @@ NewChunk2::~NewChunk2()
     if (vertices) delete[] vertices;
 }
 int nullblock = 0;
-int *NewChunk2::getBlock(uint8_t x, uint8_t y, uint8_t z)
+int *NewChunk2::getBlock(int x, int y, int z)
 {
     uint32_t index = convertIndex(x, y, z);
     if(index < blockCount)return &blocks[index];
@@ -159,7 +155,6 @@ void NewChunk2::render()
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glEnableVertexAttribArray(0);
     glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 
 }
@@ -176,18 +171,22 @@ int *NewChunk2::newBlock(int x, int y, int z)
     uint32_t index = convertIndex(x, y, z);
     if(index > maxBlockCount) throw(0);
     return &blocks[index];
-    blockCount ++;
 }
-void NewChunk2::loadFromHeightmap()
+void NewChunk2::loadFromHeightmap(Heightmap &heightmap, int xoffset, int zoffset)
 {
-    for(int x = 0; x < sideWidth; x++) {
-        for(int z = 0; z < sideWidth; z++) {
-            const int h = heightmap[x + z * sideWidth];
-            
+    if(xoffset > 0) heightmapXOffset = xoffset;
+    if(zoffset > 0) heightmapZOffset = zoffset;
+    std::cout << "loading from heightmap\n";
+
+    for(int x = heightmapXOffset; x < sideWidth + heightmapXOffset; x++) {
+        for(int z = heightmapZOffset; z < sideWidth + heightmapZOffset; z++) {
+            int h = *heightmap.getHeightmapPtr(x, z);
+            if(h > sideWidth) h = sideWidth;
             for(int y = 0; y < h; y++) {
                 *newBlock(x, y, z) = 10;
             }
         }
     }
     countBlocks();
+    std::cout << "done\n";
 }

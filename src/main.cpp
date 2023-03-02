@@ -13,6 +13,7 @@
 #include "testmodel.h"
 #include "testplane.h"
 #include "text.h"
+#include "heightmap.h"
 
 float frand(float min = 0.0, float max = 1.0)
 {
@@ -73,15 +74,17 @@ int main(int argc, char **argv)
     c.swap();
     srand(seed);
 
-    int *heightmap = new int[256 * 256];
-    for (int x = 0; x < 256; x++) {
-        for(int y = 0; y < 256; y++) {
-        heightmap[x + y * 256] = (x % 10 == 0 && y % 10 ==0) ? 100: 0;
-        }
-    }
-    NewChunk2 nc2(0, 0, 0, heightmap, p);
-    nc2.loadFromHeightmap();
+    Heightmap h(512);
+    h.generate();
+    std::cout << "heightmap generated\n";
+    NewChunk2 nc2(p);
+    NewChunk2 nc3(p);
+    nc2.loadFromHeightmap(h);
+    nc3.loadFromHeightmap(h, 0, 256);
+    std::cout << "heightmap loaded\n";
     nc2.prepare();
+    nc3.prepare();
+    std::cout << "prepared\n";
     p.use();
     auto start = std::chrono::steady_clock::now();
     auto last_frame = start;
@@ -111,8 +114,14 @@ int main(int argc, char **argv)
         debugInfo.setText("fps:  " + std::to_string(float(c.frames) / elapsed) +
                           "\n" + positionInfo);
         // render here
-
+        u_model.set((void *) glm::value_ptr(identity));
+        if(c.frames % 10 == 0 ) {
+            nc2.loadFromHeightmap(h, c.frames / 10, 0);
+            nc2.prepare();
+        }
         nc2.render();
+        u_model.set((void *)glm::value_ptr(glm::translate(identity, glm::vec3(0, 0, 255))));
+        nc3.render();
         debugInfo.Draw();
         console.Draw();
         c.swap();

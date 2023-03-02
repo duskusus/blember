@@ -10,9 +10,11 @@
 
 #include "program.h"
 #include "uniform.h"
+#include "heightmap.h"
 class NewChunk2 {
-    const int sideWidth = 256;
-    const int maxBlockCount = sideWidth * sideWidth * sideWidth;
+    const static int sideWidth = 256;
+    const static int maxBlockCount = sideWidth * sideWidth * sideWidth;
+
     int maxVertexCount = 0;
     int vertexCount = 0;
     int blockCount = 0;
@@ -20,26 +22,25 @@ class NewChunk2 {
     int *blocks = nullptr;
     glm::vec3 *vertices = nullptr;
 
-    int heightmapXOffset;
-    int heightmapYOffset;
-    int heightmapZOffset;
-    int *heightmap;
+    int heightmapXOffset = 0;
+    int heightmapYOffset = 0;
+    int heightmapZOffset = 0;
+    
 
     uint32_t vao = 0;
     uint32_t vbo = 0;
     Program &p;
 
    public:
-    NewChunk2(int xOffset, int yOffset, int zOffset, int *p_heightmap,
-              Program &p_p);
-    int *getBlock(uint8_t x, uint8_t y, uint8_t z);
+    NewChunk2(Program &p_p);
+    int *getBlock(int x, int y, int z);
 
     ~NewChunk2();
     void prepare();
     int countBlocks();
     void setProgram(Program &p_p);
     void render();
-    void loadFromHeightmap();
+    void loadFromHeightmap(Heightmap &heightmap, int xoffset = 0, int zoffset = 0);
     int  *newBlock(int x, int y, int z);
 
    private:

@@ -21,10 +21,9 @@ NewChunk2::NewChunk2(int xOffset, int yOffset, int zOffset, int *p_heightmap, Pr
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
     glGenBuffers(1, &vbo);
-
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
     blocks = new int[maxBlockCount];
 }
 NewChunk2::~NewChunk2()
@@ -78,7 +77,7 @@ void NewChunk2::prepareMesh()
                             bp + cubeVertices[indices[3]]);
                 }
 
-                if (blocks[convertIndex(x, y, z)] < 1) {
+                if (blocks[convertIndex(x + 1, y, z)] < 1) {
                     // right face
                     const uint8_t indices[] = {1, 5, 6, 2};
 
@@ -155,20 +154,19 @@ int NewChunk2::countBlocks()
 }
 void NewChunk2::render()
 {
-    p.use();
     glBindVertexArray(vao);
-    glDisable(GL_CULL_FACE);    
-    glEnableVertexAttribArray(0);
+    p.use();
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glEnableVertexAttribArray(0);
     glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+
 }
 void NewChunk2::prepare()
 {
     prepareMesh();
     printf("VertexCount %d\n", vertexCount);
-    for(int i = 0; i < 100; i++){
-        printf("X: %f, Y: %f, Z: %f\n", vertices[i].x, vertices[i].y, vertices[i].z);
-    }
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertexCount, vertices, GL_STATIC_DRAW);
@@ -182,8 +180,14 @@ int *NewChunk2::newBlock(int x, int y, int z)
 }
 void NewChunk2::loadFromHeightmap()
 {
-    for(int i = 0; i < 50; i++) {
-        *newBlock(rand() % 50, rand() % 50, rand() % 50)  = 10;
+    for(int x = 0; x < sideWidth; x++) {
+        for(int z = 0; z < sideWidth; z++) {
+            const int h = heightmap[x + z * sideWidth];
+            
+            for(int y = 0; y < h; y++) {
+                *newBlock(x, y, z) = 10;
+            }
+        }
     }
     countBlocks();
 }

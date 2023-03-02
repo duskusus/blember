@@ -30,8 +30,8 @@ int main(int argc, char **argv)
     Context c("blember", 1280, 720);
     TTF_Init();
     c.showFrameInfo = false;
-    Shader v("res/shaders/clean.vert", GL_VERTEX_SHADER);
-    Shader f("res/shaders/clean.frag", GL_FRAGMENT_SHADER);
+    Shader v("res/shaders/fast.vert", GL_VERTEX_SHADER);
+    Shader f("res/shaders/fast.frag", GL_FRAGMENT_SHADER);
 
     Program p;
 
@@ -51,7 +51,6 @@ int main(int argc, char **argv)
     Uniform u_view("view", p, (void *)glUniformMatrix4fv);
     Uniform u_proj("proj", p, (void *)glUniformMatrix4fv);
     Uniform u_time("time", p, (void *)glUniform1f);
-    Uniform u_waterlevel("waterlevel", p, (void *)glUniform1f);
 
     u_proj.set((void *)glm::value_ptr(proj));
     glm::mat4 identity = glm::identity<glm::mat4>();
@@ -61,8 +60,7 @@ int main(int argc, char **argv)
 
     TextBox debugInfo("Console", c.width - 400, c.height, 18, c);
     debugInfo.setfont("res/Helvetica.ttf");
-    NewChunk nc(p, u_model, 800);
-    nc.generate();
+
     TextBox console("Console Text: ", 0, c.height, 18, c);
     console.setWidth(150);
     console.setfont("res/LiberationSans-Regular.ttf");
@@ -75,10 +73,16 @@ int main(int argc, char **argv)
     c.swap();
     srand(seed);
 
-    int * heightmap = new int[255 * 255];
-    for(int i = 0; i < 255 * 255; i++) {
-        heightmap[i] = rand() % 255;
+    int *heightmap = new int[256 * 256];
+    for (int x = 0; x < 256; x++) {
+        for(int y = 0; y < 256; y++) {
+        heightmap[x + y * 256] = (x % 10 == 0 && y % 10 ==0) ? 100: 0;
+        }
     }
+    NewChunk2 nc2(0, 0, 0, heightmap, p);
+    nc2.loadFromHeightmap();
+    nc2.prepare();
+    p.use();
     auto start = std::chrono::steady_clock::now();
     auto last_frame = start;
     float elapsed;
@@ -101,15 +105,16 @@ int main(int argc, char **argv)
         u_view.set((void *)glm::value_ptr(view));
         u_time.set(&elapsed);
 
-        std::string positionInfo =
-            "x: " + std::to_string(camera.x) +
-            " y: " + std::to_string(camera.y) +
-            " z: " + std::to_string(camera.z);
+        std::string positionInfo = "x: " + std::to_string(camera.x) +
+                                   " y: " + std::to_string(camera.y) +
+                                   " z: " + std::to_string(camera.z);
         debugInfo.setText("fps:  " + std::to_string(float(c.frames) / elapsed) +
                           "\n" + positionInfo);
         // render here
-   
-        nc.render();
+
+        nc2.render();
+        debugInfo.Draw();
+        console.Draw();
         c.swap();
     }
     std::cout << "Average Frametime: " << elapsed * 1000 / c.frames

@@ -7,7 +7,6 @@ uniform mat4 view;
 uniform mat4 proj;
 uniform float time;
 
-flat out vec3 blockColor;
 varying vec3 worldPos;
 
 vec3 hsv2rgb(vec3 c)
@@ -19,5 +18,5 @@ vec3 hsv2rgb(vec3 c)
 void main()
 {
 	gl_Position = proj * view * model * vec4(vertPos, 1.0);
-	blockColor = hsv2rgb(vec3(gl_Position.y, 1.0, 1.0));
+    worldPos = vertPos;
 }

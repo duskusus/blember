@@ -1,11 +1,6 @@
 #version 330
-
-flat in vec3 blockColor;
+out vec4 FragColor;
 varying vec3 worldPos;
-uniform float time;
-uniform float waterlevel;
-out vec4 LFragment;
-
 
 vec3 hsv2rgb(vec3 c)
 {
@@ -15,5 +10,9 @@ vec3 hsv2rgb(vec3 c)
 }
 void main()
 {
-	LFragment = vec4(1.0, 0.0, 0.0, 1.0);
+    vec3 lightDirection = vec3(1.0, -1.0, 0.0);
+    vec3 normal = normalize(cross(dFdx(worldPos), dFdy(worldPos)));
+    float brightness = dot(normal, lightDirection);
+    brightness = clamp(brightness * brightness, 0.2, 1.0);
+    FragColor = vec4(vec3(brightness, brightness, brightness), 1.0);
 }

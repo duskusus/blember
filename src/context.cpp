@@ -99,8 +99,11 @@ int Context::poll()
 void Context::fly_control_view(glm::mat4 &view, glm::vec4 &camera,
                                const float deltaTime)
 {
+
     glm::vec4 move = glm::vec4(0.0);
-    float positionIncrement = 1.0 * deltaTime / 0.01667;
+
+    float positionIncrement = 0.25 * deltaTime / 0.01667;
+
     if (keys->at(SDLK_w)) {
         move.z += positionIncrement;
     }
@@ -122,6 +125,7 @@ void Context::fly_control_view(glm::mat4 &view, glm::vec4 &camera,
     if (keys->at(SDLK_t)) {
         flying = false;
     }
+
     view = glm::mat4(1.0);
     view = glm::rotate(view, mouse.y, glm::vec3(1.0, 0.0, 0.0));
     view = glm::rotate(view, mouse.x, glm::vec3(0.0, 1.0, 0.0));

@@ -15,9 +15,10 @@ void Heightmap::generate()
     for(int i = 0; i < size; i++) {
         map[i] = 1;
     }
-    slowNoise(0.4, 2, 4 * sideLength, 1);
-    slowNoise(0.3, 20, sideLength / 2, sideLength / 2);
-    convolve(40);
+    slowNoise(0.4, rand() % 10, 2 * sideLength, sideLength);
+    slowNoise(0.2, 400, sideLength / 2, sideLength / 2);
+    slowNoise(0.2, rand() % 100, rand() % sideLength, rand() % sideLength);
+    convolve(100);
     normalize();
 }
 void Heightmap::convolve(uint32_t kwid)
@@ -55,17 +56,6 @@ void Heightmap::convolve(uint32_t kwid)
     delete[] map;
     map = new_heightmap;
 }
-int *Heightmap::getHeightmapPtr(int x, int z)
-{
-    return getHeightmapPtr(x, z, map);
-}
-int *Heightmap::getHeightmapPtr(int x, int z, int *p_heightmap)
-{
-    if (x < 0 || x >= sideLength || z < 0 || z >= sideLength) return NULL;
-
-    const int index = x + z * sideLength;
-    return &p_heightmap[index];
-}
 void Heightmap::slowNoise(const float sloperange, int count, const int sizeOffset, const int sizeRange)
 {
     for (int i = 0; i < count; i++) {
@@ -102,15 +92,44 @@ void Heightmap::slowNoise(const float sloperange, int count, const int sizeOffse
 void Heightmap::normalize()
 {
     int min = 999999;
+    int max = -999999;
     int sum = 0;
     for (int i = 0; i < size; i++) {
         if (map[i] < min) {
             min = map[i];
         }
+        if(map[i] > max) {
+            max = map[i];
+        }
         sum += map[i];
     }
     const int offset = min;
+    max -= offset;
     for (int i = 0; i < size; i++) {
         map[i] -= offset;
+        map[i] = (map[i] * 256) / max; 
     }
+}
+void Heightmap::writeToFile(const std::string &name)
+{
+    std::fstream f;
+    f.open(name, std::ios::binary | std::ios::out);
+    f << size;
+    f.write((const char *) map, sizeof(int) * size);
+    f.close();
+
+}
+void Heightmap::readFromFile(const std::string &fname)
+{
+    std::fstream f;
+    f.open(fname, std::ios::in | std::ios::binary);
+    int fsize;
+    f >> fsize;
+
+    if(fsize != size) {
+        printf("Heightmap reading error: size of file %s and heightmap do not match\n", fname.c_str());
+        throw(0);
+    }
+
+    f.read((char *) map, sizeof(int) * size);
 }

@@ -7,13 +7,13 @@
 
 #include "chunk.h"
 #include "context.h"
+#include "heightmap.h"
 #include "includes.h"
 #include "newchunk.h"
 #include "newchunk2.h"
 #include "testmodel.h"
 #include "testplane.h"
 #include "text.h"
-#include "heightmap.h"
 
 float frand(float min = 0.0, float max = 1.0)
 {
@@ -48,14 +48,8 @@ int main(int argc, char **argv)
     glm::mat4 proj = glm::perspective(90.0, 1280.0 / 720.0, 0.01, 100000.0);
     float waterlevel = 100.0;
 
-    Uniform u_model("model", p, (void *)glUniformMatrix4fv);
-    Uniform u_view("view", p, (void *)glUniformMatrix4fv);
-    Uniform u_proj("proj", p, (void *)glUniformMatrix4fv);
+    Uniform u_pvm("pvm", p, (void *)glUniformMatrix4fv);
     Uniform u_time("time", p, (void *)glUniform1f);
-
-    u_proj.set((void *)glm::value_ptr(proj));
-    glm::mat4 identity = glm::identity<glm::mat4>();
-    u_model.set((void *)glm::value_ptr(identity));
 
     glm::vec4 camera = glm::vec4(0.0);
 
@@ -74,38 +68,51 @@ int main(int argc, char **argv)
     c.swap();
     srand(seed);
 
-    Heightmap h(512);
-    h.generate();
-    std::cout << "heightmap generated\n";
-    NewChunk2 nc2(p);
-    NewChunk2 nc3(p);
-    nc2.loadFromHeightmap(h);
-    nc3.loadFromHeightmap(h, 0, 256);
-    std::cout << "heightmap loaded\n";
-    nc2.prepare();
-    nc3.prepare();
-    std::cout << "prepared\n";
+    Heightmap h(1024);
+    h.readFromFile("testmap");
+
+    camera.x = 512;
+    camera.z = 512;
+    camera.y = *h.getHeightmapPtr(512, 512);
+
+    std::vector<NewChunk2 *> chunks;
+
+    for (int i = 0; i < 16; i++) {
+
+        chunks.push_back(new NewChunk2(p));
+        chunks[i]->loadFromHeightmap(h, 256 * (i % 4), 256 * (i / 4));
+        chunks[i]->prepare();
+
+    }
+
     p.use();
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+
     auto start = std::chrono::steady_clock::now();
     auto last_frame = start;
     float elapsed;
+
     while (c.poll() == 1) {
+
         auto now = std::chrono::steady_clock::now();
 
         float deltaTime = std::chrono::duration_cast<std::chrono::microseconds>(
                               now - last_frame)
                               .count() /
                           1000000.0;
+
         last_frame = now;
 
         elapsed =
             std::chrono::duration_cast<std::chrono::microseconds>(now - start)
                 .count() /
-            1000000.0;
+            1e6;
+
         if (c.flying) {
             c.fly_control_view(view, camera, deltaTime);
         }
-        u_view.set((void *)glm::value_ptr(view));
+
         u_time.set(&elapsed);
 
         std::string positionInfo = "x: " + std::to_string(camera.x) +
@@ -114,18 +121,24 @@ int main(int argc, char **argv)
         debugInfo.setText("fps:  " + std::to_string(float(c.frames) / elapsed) +
                           "\n" + positionInfo);
         // render here
-        u_model.set((void *) glm::value_ptr(identity));
-        if(c.frames % 10 == 0 ) {
-            nc2.loadFromHeightmap(h, c.frames / 10, 0);
-            nc2.prepare();
+        glm::mat4 identity = glm::identity<glm::mat4>();
+        glm::mat4 model;
+        glm::mat4 pvm;
+
+        for (int i = 0; i < 16; i++) {
+            model = glm::translate(
+                identity, glm::vec3(256.0 * (i % 4), 0, 256.0 * (i / 4)));
+            pvm = proj * view * model;
+            u_pvm.set((void *) glm::value_ptr(pvm));
+            chunks[i]->render();
         }
-        nc2.render();
-        u_model.set((void *)glm::value_ptr(glm::translate(identity, glm::vec3(0, 0, 255))));
-        nc3.render();
+
         debugInfo.Draw();
         console.Draw();
+
         c.swap();
     }
+
     std::cout << "Average Frametime: " << elapsed * 1000 / c.frames
               << " framerate: " << c.frames / elapsed << std::endl;
     return 0;

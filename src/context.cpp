@@ -135,10 +135,10 @@ void Context::fly_control_view(glm::mat4 &view, glm::vec4 &camera,
     view = glm::translate(view, - glm::vec3(camera.x, camera.y, camera.z));
 }
 void Context::walk_control_view(glm::mat4 &view, glm::vec4 &camera,
-                                const float deltaTime, NewChunk &world)
+                                const float deltaTime, Heightmap &h)
 {
     glm::vec4 move = glm::vec4(0.0);
-    float positionIncrement = 5.0 * deltaTime;
+    float positionIncrement = 10.0 * deltaTime;
     if (keys->at(SDLK_w)) {
         move.z += positionIncrement;
     }
@@ -151,21 +151,19 @@ void Context::walk_control_view(glm::mat4 &view, glm::vec4 &camera,
     if (keys->at(SDLK_d)) {
         move.x -= positionIncrement;
     }
-    if (keys->at(SDLK_t)) {
-        flying = true;
-    }
 
     view = glm::mat4(1.0);
+    glm::mat4 moview = glm::mat4(1.0);
     view = glm::rotate(view, mouse.y, glm::vec3(1.0, 0.0, 0.0));
     view = glm::rotate(view, mouse.x, glm::vec3(0.0, 1.0, 0.0));
-    glm::mat4 inview = glm::inverse(view);
+    
+    moview = glm::rotate(moview, mouse.x, glm::vec3(0.0, 1.0, 0.0));
+    
+    glm::mat4 inview = glm::inverse(moview);
     move = inview * move;
 
     camera += move;
-    camera.y = -4.0 - world.getHeightmapVal(-int(camera.x + 0.5),
-                                            -int(camera.z + 0.5));
-    if (move.length() > 0.0)
-        std::cout << "x " << camera.x << " y " << camera.y << " z " << camera.z
-                  << std::endl;
+    camera.y = -0.2 - *h.getHeightmapPtr(-int(camera.x), -int(camera.y));
     view = glm::translate(view, glm::vec3(camera.x, camera.y, camera.z));
+    printf("%f\n", camera.y);
 }

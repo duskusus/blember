@@ -33,6 +33,8 @@ int main(int argc, char **argv)
     c.showFrameInfo = false;
     Shader v("res/shaders/fast.vert", GL_VERTEX_SHADER);
     Shader f("res/shaders/fast.frag", GL_FRAGMENT_SHADER);
+    
+    const int chunk_count = 2;
 
     Program p;
 
@@ -69,15 +71,15 @@ int main(int argc, char **argv)
     srand(seed);
 
     Heightmap h(1024);
-    h.readFromFile("testmap");
+    h.readFromFile("testmap2");
 
-    camera.x = 512;
-    camera.z = 512;
-    camera.y = *h.getHeightmapPtr(512, 512);
+    camera.x = 0;
+    camera.z = 0;
+    camera.y = *h.getHeightmapPtr(int(camera.x), int(camera.y));
 
     std::vector<NewChunk2 *> chunks;
 
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < chunk_count; i++) {
 
         chunks.push_back(new NewChunk2(p));
         chunks[i]->loadFromHeightmap(h, 256 * (i % 4), 256 * (i / 4));
@@ -110,6 +112,7 @@ int main(int argc, char **argv)
             1e6;
 
         if (c.flying) {
+            //c.fly_control_view(view, camera, deltaTime);
             c.fly_control_view(view, camera, deltaTime);
         }
 
@@ -125,7 +128,7 @@ int main(int argc, char **argv)
         glm::mat4 model;
         glm::mat4 pvm;
 
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < chunk_count; i++) {
             model = glm::translate(
                 identity, glm::vec3(256.0 * (i % 4), 0, 256.0 * (i / 4)));
             pvm = proj * view * model;

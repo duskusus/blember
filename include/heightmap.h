@@ -6,6 +6,7 @@ static int nullblock = 512;
 class Heightmap {
     uint32_t sideLength = 256;
     uint32_t size = sideLength * sideLength;
+    int averageBlockHeight = 0;
     int *map = nullptr;
 
    public:
@@ -22,6 +23,9 @@ class Heightmap {
         if (x < 0 || x >= sideLength || z < 0 || z >= sideLength){
             nullblock = 256;
             return &nullblock;
+        }
+        else {
+            printf("%d, %d\n", x, z);
         }
 
         const int index = x + z * sideLength;

@@ -1,4 +1,5 @@
 #include "newchunk2.h"
+#include <stdlib.h>
 const glm::vec3 cubeVertices[] = {{0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1},
                                   {0, 0, 0}, {1, 0, 0}, {1, 1, 0}, {0, 1, 0}};
 
@@ -61,6 +62,7 @@ void NewChunk2::prepareMesh()
             for (int z = 0; z < sideWidth; z++) {
                 const glm::vec3 bp(x, y, z);
                 if (*getBlock(x, y, z) > 0) {
+                    int color = *getBlock(x, y, z);
                     if (*getBlock(x - 1, y, z) < 1) {
                         // left face
                         const uint8_t indices[] = {0, 3, 7, 4};
@@ -68,7 +70,7 @@ void NewChunk2::prepareMesh()
                         newQuad(bp + cubeVertices[indices[0]],
                                 bp + cubeVertices[indices[1]],
                                 bp + cubeVertices[indices[2]],
-                                bp + cubeVertices[indices[3]]);
+                                bp + cubeVertices[indices[3]], color);
                     }
 
                     if (*getBlock(x + 1, y, z) < 1) {
@@ -78,7 +80,7 @@ void NewChunk2::prepareMesh()
                         newQuad(bp + cubeVertices[indices[0]],
                                 bp + cubeVertices[indices[1]],
                                 bp + cubeVertices[indices[2]],
-                                bp + cubeVertices[indices[3]]);
+                                bp + cubeVertices[indices[3]], color);
                     }
 
                     if (*getBlock(x, y - 1, z) < 1) {
@@ -88,7 +90,7 @@ void NewChunk2::prepareMesh()
                         newQuad(bp + cubeVertices[indices[0]],
                                 bp + cubeVertices[indices[1]],
                                 bp + cubeVertices[indices[2]],
-                                bp + cubeVertices[indices[3]]);
+                                bp + cubeVertices[indices[3]], color);
                     }
 
                     if (*getBlock(x, y + 1, z) < 1) {
@@ -98,7 +100,7 @@ void NewChunk2::prepareMesh()
                         newQuad(bp + cubeVertices[indices[0]],
                                 bp + cubeVertices[indices[1]],
                                 bp + cubeVertices[indices[2]],
-                                bp + cubeVertices[indices[3]]);
+                                bp + cubeVertices[indices[3]], color);
                     }
 
                     if (*getBlock(x, y, z - 1) < 1) {
@@ -108,7 +110,7 @@ void NewChunk2::prepareMesh()
                         newQuad(bp + cubeVertices[indices[0]],
                                 bp + cubeVertices[indices[1]],
                                 bp + cubeVertices[indices[2]],
-                                bp + cubeVertices[indices[3]]);
+                                bp + cubeVertices[indices[3]], color);
                     }
 
                     if (*getBlock(x, y, z + 1) < 1) {
@@ -118,7 +120,7 @@ void NewChunk2::prepareMesh()
                         newQuad(bp + cubeVertices[indices[0]],
                                 bp + cubeVertices[indices[1]],
                                 bp + cubeVertices[indices[2]],
-                                bp + cubeVertices[indices[3]]);
+                                bp + cubeVertices[indices[3]], color);
                     }
                 }
             }
@@ -129,6 +131,22 @@ void NewChunk2::newQuad(const glm::vec3 &a, const glm::vec3 &b,
                         const glm::vec3 &c, const glm::vec3 &d)
 {
     glm::vec3 color(float(a.y + rand() % 20) / 200.0, 1.0, 1.0);
+
+    newVertex(a).hsv = color;
+    newVertex(b).hsv = color;
+    newVertex(c).hsv = color;
+
+    newVertex(a).hsv = color;
+    newVertex(c).hsv = color;
+    newVertex(d).hsv = color;
+}
+void NewChunk2::newQuad(const glm::vec3 &a, const glm::vec3 &b,
+                        const glm::vec3 &c, const glm::vec3 &d, int p_color)
+{
+    glm::vec3 color(p_color & 0xff, (p_color & 0xff00) >> 8, (p_color & 0xff0000) >> 16);
+    color.x /= 255.0;
+    color.y /= 255.0;
+    color.z /= 255.0;
 
     newVertex(a).hsv = color;
     newVertex(b).hsv = color;
@@ -158,9 +176,9 @@ void NewChunk2::render()
 }
 void NewChunk2::prepare()
 {
+    trees(50);
     prepareMesh();
     darkenVertices();
-    snow();
     printf("VertexCount %d\n", vertexCount);
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -172,19 +190,34 @@ int *NewChunk2::newBlock(int x, int y, int z)
     uint32_t index = convertIndex(x, y, z);
     return &blocks[index];
 }
+int *NewChunk2::newBlock(int x, int y, int z, glm::vec3 &color)
+{
+    int *b = newBlock(x, y, z);
+    *b = (int(255 * color.x))  | (int(255 * color.y) << 8) | (int(255 * color.z) << 16);
+    return b;
+}
+int *NewChunk2::getHeightmapPtr(int x, int z)
+{
+    return hmap->getHeightmapPtr(x + heightmapXOffset, z + heightmapZOffset);
+}
 void NewChunk2::loadFromHeightmap(Heightmap &heightmap, int xoffset,
                                   int zoffset)
 {
-    if (xoffset > 0) heightmapXOffset = xoffset;
-    if (zoffset > 0) heightmapZOffset = zoffset;
-    std::cout << "loading from heightmap\n";
+    heightmapXOffset = xoffset;
+    heightmapZOffset = zoffset;
+
+    hmap = &heightmap;
 
     for (int x = heightmapXOffset; x < sideWidth + heightmapXOffset; x++) {
         for (int z = heightmapZOffset; z < sideWidth + heightmapZOffset; z++) {
             int h = *heightmap.getHeightmapPtr(x, z);
             h = h % sideWidth;
             for (int y = 0; y < h; y++) {
-                *newBlock(x, y, z) = 10;
+                glm::vec3 c((y + rand() % 25) / 255.0, 1.0 - (y / 512.0), 1.0);
+                if(y < 80){
+                    c.x = 200 / 360.0;
+                }
+                newBlock(x, y, z, c);
             }
         }
     }
@@ -198,18 +231,20 @@ void NewChunk2::darkenVertices()
         int x = v.pos.x;
         int y = v.pos.y;
         int z = v.pos.z;
-
-        for (int p = -1; p < 2; p += 2) {
-            for (int q = -1; q < 2; q += 2) {
-                for (int r = -1; r < 2; r += 2) {
+        if(y < 80){
+            continue;
+        }
+        for (int p = -1; p < 2; p += 1) {
+            for (int q = 0; q < 2; q += 1) {
+                for (int r = -1; r < 2; r += 1) {
                     if (*getBlock(x + p, y + q, z + r) > 1) fillCount++;
                 }
             }
         }
 
         float brightness = 1.0;
-        for (int i = 0; i < fillCount - 4; i++) {
-            brightness *= 0.9;
+        for (int i = 0; i < fillCount; i++) {
+            brightness *= 0.95;
         }
 
         v.hsv.z = brightness;
@@ -220,6 +255,63 @@ void NewChunk2::snow()
     for (int i = 0; i < vertexCount; i++) {
         nc2VertexType &v = vertices[i];
         if(v.pos.y > 192.0)
-            v.hsv.y = 1.0 - v.pos.y / 256.0;
+            v.hsv.y = 0.0;
+    }
+}
+void NewChunk2::trees(int count)
+{
+    for(int i = 0; i < count; i++)
+    {
+
+        int x = rand() % sideWidth;
+        int z = rand() % sideWidth;
+
+        int height = 10 + rand() % 60;
+        int leafHeight = 9 + rand() % ((3 * height) / 4 + 1);
+        int outerLeafWidth = 10 + rand() % (leafHeight / 2 + 1);
+        if(x + outerLeafWidth / 2 > sideWidth || x - outerLeafWidth / 2 < 0 || z + outerLeafWidth / 2 > sideWidth || z - outerLeafWidth / 2 < 0){
+            i --;
+            continue;
+        }
+
+        int h = *getHeightmapPtr(x, z);
+
+        if(h < waterlevel) {
+            i --;
+            continue;
+        }
+
+        for(int j = 0; j < height; j++) {
+            
+            glm::vec3 woodColor(30.0 / 360.0, 1.0, 0.2);
+            newBlock(x, j + h, z, woodColor);
+            newBlock(x  + 1, j + h, z, woodColor);
+            newBlock(x, j + h, z + 1, woodColor);
+            newBlock(x + 1, j + h, z + 1, woodColor);
+         
+        }
+
+
+
+        int leafColorOffset = rand() % 100;
+
+        for(int p = 0; p < leafHeight + 2; p++) {
+
+            int leafWidth = (outerLeafWidth * (leafHeight - p + 1)) / leafHeight;
+
+            for(int q = -leafWidth / 2; q < leafWidth / 2 + 1; q++){
+
+                for(int r = -leafWidth / 2; r < leafWidth / 2  + 1; r++) {
+                    
+                    int y = p + h + height - leafHeight;
+                    glm::vec3 leafColor(0.0, 1.0, 0.35);
+
+                    leafColor.x += leafColorOffset + rand() % 40;
+                    leafColor.x /= 360.0;
+
+                    newBlock(x + q, p + h + height - leafHeight, z + r, leafColor);
+                }
+            }
+        }
     }
 }

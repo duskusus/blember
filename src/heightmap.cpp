@@ -95,12 +95,14 @@ void Heightmap::normalize()
     int max = -999999;
     int sum = 0;
     for (int i = 0; i < size; i++) {
+
         if (map[i] < min) {
             min = map[i];
         }
         if(map[i] > max) {
             max = map[i];
         }
+
         sum += map[i];
     }
     const int offset = min;

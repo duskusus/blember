@@ -12,6 +12,7 @@
 
 #include "uniform.h"
 #include "newchunk.h"
+#include "heightmap.h"
 class Context {
     public:
     SDL_Window *window = nullptr;
@@ -44,5 +45,5 @@ class Context {
     void swap();
     int poll();
     void fly_control_view(glm::mat4 &view, glm::vec4 &position, const float deltaTime);
-    void walk_control_view(glm::mat4 &view, glm::vec4 &position, const float deltaTime, NewChunk &world);
+    void walk_control_view(glm::mat4 &view, glm::vec4 &position, const float deltaTime, Heightmap &h);
 };

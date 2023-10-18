@@ -35,6 +35,7 @@ class TextBox {
     Context &c;
     int width = c.width;
     bool shouldUpdate = true;
+    bool textChange = true;
 
     SDL_Color textColor = {0xff, 0xff, 0xff};
     SDL_Color backgroundColor = {0x00, 0x00, 0x00};
@@ -57,7 +58,7 @@ class TextBox {
     void update()
     {
         shouldUpdate = false;
-        if (font) TTF_CloseFont(font);
+        if (!font) TTF_CloseFont(font);
         font = TTF_OpenFont(fontpath.c_str(), size);
 
         TTF_SetFontStyle(font, TTF_STYLE_NORMAL);
@@ -67,10 +68,9 @@ class TextBox {
                    TTF_GetError());
 
         if (text_surface) SDL_FreeSurface(text_surface);
-        text_surface = TTF_RenderText_Shaded_Wrapped(font, text.c_str(), textColor,
-                                                  backgroundColor, width);
+        text_surface = TTF_RenderText_Shaded_Wrapped(font, text.c_str(), textColor, backgroundColor, width);
         text_surface =
-            SDL_ConvertSurfaceFormat(text_surface, SDL_PIXELFORMAT_RGBA32, 0);
+            SDL_ConvertSurfaceFormat(text_surface, SDL_PIXELFORMAT_ARGB8888, 0);
         
         glBindTexture(GL_TEXTURE_2D, texId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, text_surface->w,
@@ -81,9 +81,20 @@ class TextBox {
         glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                GL_TEXTURE_2D, texId, 0);
     }
+    void updateTextOnly() {
+        if(text_surface) SDL_FreeSurface(text_surface);
+        text_surface = TTF_RenderText_Shaded_Wrapped(font, text.c_str(), textColor, backgroundColor, width);
+        text_surface = SDL_ConvertSurfaceFormat(text_surface, SDL_PIXELFORMAT_ARGB8888, 0);
+        textChange = false;
+        glBindTexture(GL_TEXTURE_2D, texId);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, text_surface->w,
+                     text_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                     text_surface->pixels);
+    }
     void Draw()
     {
         if(shouldUpdate) update();
+        if(textChange) updateTextOnly();
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -95,7 +106,7 @@ class TextBox {
                           GL_COLOR_BUFFER_BIT, GL_NEAREST);
     };
     void setText(const std::string &s) { 
-        shouldUpdate = true;
+        textChange = true;
         text = s; }
     void setPosition(int p_x, int p_y)
     {
@@ -118,11 +129,7 @@ class TextBox {
     void append(std::string s)
     {
         text += s;
-        update();
-        if(text_surface->h > c.height) {
-            text = " ";
-        }
-        shouldUpdate = true;
+        textChange = true;
     }
     int getHeight() const {
         if(text_surface) return text_surface->h;

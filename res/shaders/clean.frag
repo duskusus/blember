@@ -18,11 +18,7 @@ void main()
     vec3 normal = normalize(cross(dFdx(worldPos), dFdy(worldPos)));
     float brightness = dot(normal, lightDirection);
     brightness = clamp(brightness * brightness, 0.2, 1.0);
-    if(worldPos.y < waterlevel)
-    {
-        LFragment = vec4(vec3(0.0, 0.0, 1.0), 1.0);
-        return;
-    }
+    blockColor = lerp(blockColor, vec3(1.0), gl_FragCoord.z);
     //float brightness = 1.0;
 
 	LFragment = vec4(blockColor * brightness, 1.0);

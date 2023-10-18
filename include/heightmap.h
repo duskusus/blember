@@ -24,9 +24,6 @@ class Heightmap {
             nullblock = 256;
             return &nullblock;
         }
-        else {
-            printf("%d, %d\n", x, z);
-        }
 
         const int index = x + z * sideLength;
         return &p_heightmap[index];

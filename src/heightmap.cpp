@@ -18,8 +18,11 @@ void Heightmap::generate()
     slowNoise(0.4, rand() % 10, 2 * sideLength, sideLength);
     slowNoise(0.2, 400, sideLength / 2, sideLength / 2);
     slowNoise(0.2, rand() % 100, rand() % sideLength, rand() % sideLength);
-    convolve(100);
+    printf("Starting Convolution\n");
+    convolve(40);
+    printf("Done with convolution\n");
     normalize();
+    printf("Done generating heightmap\n");
 }
 void Heightmap::convolve(uint32_t kwid)
 {

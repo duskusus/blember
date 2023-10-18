@@ -28,13 +28,13 @@ glm::vec3 v3rand()
 
 int main(int argc, char **argv)
 {
-    Context c("blember", 1280, 720);
+    Context c("blember", 1920, 1080);
     TTF_Init();
     c.showFrameInfo = false;
     Shader v("res/shaders/fast.vert", GL_VERTEX_SHADER);
     Shader f("res/shaders/fast.frag", GL_FRAGMENT_SHADER);
     
-    const int chunk_count = 2;
+    const int chunk_count = 8;
 
     Program p;
 
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     srand(time(NULL));
     view = glm::translate(view, glm::vec3(0.0, 0, 0));
 
-    glm::mat4 proj = glm::perspective(90.0, 1280.0 / 720.0, 0.01, 100000.0);
+    glm::mat4 proj = glm::perspective<float>(90.0, float(c.width) / float(c.height), 0.01, 1000.0);
     float waterlevel = 100.0;
 
     Uniform u_pvm("pvm", p, (void *)glUniformMatrix4fv);
@@ -55,10 +55,10 @@ int main(int argc, char **argv)
 
     glm::vec4 camera = glm::vec4(0.0);
 
-    TextBox debugInfo("Console", c.width - 400, c.height, 18, c);
-    debugInfo.setfont("res/Helvetica.ttf");
+    TextBox debugInfo("Console", c.width * 4 / 5, c.height, 22, c);
+    debugInfo.setfont("res/LiberationSans-Regular.ttf");
 
-    TextBox console("Console Text: ", 0, c.height, 18, c);
+    TextBox console("Console Text: ", 0, c.height, 22, c);
     console.setWidth(150);
     console.setfont("res/LiberationSans-Regular.ttf");
     console.setText("Console\n");
@@ -70,8 +70,8 @@ int main(int argc, char **argv)
     c.swap();
     srand(seed);
 
-    Heightmap h(1024);
-    h.readFromFile("testmap2");
+    Heightmap h(2048);
+    h.readFromFile("testmap_large");
 
     camera.x = 0;
     camera.z = 0;
@@ -101,8 +101,7 @@ int main(int argc, char **argv)
 
         float deltaTime = std::chrono::duration_cast<std::chrono::microseconds>(
                               now - last_frame)
-                              .count() /
-                          1000000.0;
+                              .count() / 1e6;
 
         last_frame = now;
 
@@ -137,7 +136,7 @@ int main(int argc, char **argv)
         }
 
         debugInfo.Draw();
-        console.Draw();
+        //console.Draw();
 
         c.swap();
     }

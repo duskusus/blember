@@ -179,7 +179,6 @@ void NewChunk2::prepare()
     trees(50);
     prepareMesh();
     darkenVertices();
-    printf("VertexCount %d\n", vertexCount);
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(nc2VertexType) * vertexCount, vertices,

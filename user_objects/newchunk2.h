@@ -35,10 +35,13 @@ class NewChunk2 {
 
     int *blocks = nullptr;
     nc2VertexType *vertices = nullptr;
+    Heightmap *hmap = nullptr;
 
     int heightmapXOffset = 0;
     int heightmapYOffset = 0;
     int heightmapZOffset = 0;
+
+    int waterlevel = 80;
     
 
     uint32_t vao = 0;
@@ -56,12 +59,17 @@ class NewChunk2 {
     void render();
     void loadFromHeightmap(Heightmap &heightmap, int xoffset = 0, int zoffset = 0);
     int  *newBlock(int x, int y, int z);
+    int *newBlock(int x, int y, int z, glm::vec3 &color);
 
    private:
     void prepareMesh();
     nc2VertexType &newVertex(const glm::vec3 &x);
     void newQuad(const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c,
                  const glm::vec3 &d);
+    void newQuad(const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c,
+                 const glm::vec3 &d, int color);
     void darkenVertices();
     void snow();
+    void trees(int count);
+    int *getHeightmapPtr(int x, int z);
 };

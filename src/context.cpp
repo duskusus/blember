@@ -102,7 +102,7 @@ void Context::fly_control_view(glm::mat4 &view, glm::vec4 &camera,
 
     glm::vec4 move = glm::vec4(0.0);
 
-    float positionIncrement = 5.0 * deltaTime / 0.01667;
+    float positionIncrement = 1.0 * deltaTime / 0.01667;
 
     if (keys->at(SDLK_w)) {
         move.z += positionIncrement;

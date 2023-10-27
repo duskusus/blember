@@ -25,8 +25,8 @@ Context::Context(std::string windowName, uint16_t width, uint16_t height)
     keycount = sizeof(keysToPoll) / sizeof(SDL_Keycode);
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, width, height,
-                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+                              SDL_WINDOWPOS_UNDEFINED, 0, 0,
+                              SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN_DESKTOP);
     context = SDL_GL_CreateContext(window);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if(renderer == NULL) printf("Could not create renderer\n");

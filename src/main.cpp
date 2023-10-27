@@ -28,7 +28,7 @@ glm::vec3 v3rand()
 
 int main(int argc, char **argv)
 {
-    Context c("blember", 1920, 1080);
+    Context c("blember", 1280, 720);
     TTF_Init();
     c.showFrameInfo = false;
     Shader v("res/shaders/fast.vert", GL_VERTEX_SHADER);

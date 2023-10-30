@@ -24,19 +24,18 @@ Context::Context(std::string windowName, uint16_t width, uint16_t height)
 {
     keycount = sizeof(keysToPoll) / sizeof(SDL_Keycode);
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow(windowName.c_str(), SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, width, height,
+    window = SDL_CreateWindow(windowName.c_str(), 0, 0, width, height,
                               SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     context = SDL_GL_CreateContext(window);
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if(renderer == NULL) printf("Could not create renderer\n");
+    if (renderer == NULL) printf("Could not create renderer\n");
     glClearColor(0.4235, 0.851, 1.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                         SDL_GL_CONTEXT_PROFILE_CORE);
-    //SDL_GL_SetSwapInterval(1);
+    // SDL_GL_SetSwapInterval(1);
     glewInit();
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, 0);
@@ -76,8 +75,8 @@ int Context::poll()
                 if (e.key.keysym.sym == keysToPoll[i])
                     keys->at(keysToPoll[i]) = false;
             }
-        } 
-        else if(e.type == SDL_MOUSEBUTTONDOWN) {
+        }
+        else if (e.type == SDL_MOUSEBUTTONDOWN) {
             LMouse = true;
         }
     }
@@ -99,7 +98,6 @@ int Context::poll()
 void Context::fly_control_view(glm::mat4 &view, glm::vec4 &camera,
                                const float deltaTime)
 {
-
     glm::vec4 move = glm::vec4(0.0);
 
     float positionIncrement = 5.0 * deltaTime / 0.01667;
@@ -132,7 +130,7 @@ void Context::fly_control_view(glm::mat4 &view, glm::vec4 &camera,
     glm::mat4 inview = glm::inverse(view);
     move = inview * move;
     camera -= move;
-    view = glm::translate(view, - glm::vec3(camera.x, camera.y, camera.z));
+    view = glm::translate(view, -glm::vec3(camera.x, camera.y, camera.z));
 }
 void Context::walk_control_view(glm::mat4 &view, glm::vec4 &camera,
                                 const float deltaTime, Heightmap &h)
@@ -156,9 +154,9 @@ void Context::walk_control_view(glm::mat4 &view, glm::vec4 &camera,
     glm::mat4 moview = glm::mat4(1.0);
     view = glm::rotate(view, mouse.y, glm::vec3(1.0, 0.0, 0.0));
     view = glm::rotate(view, mouse.x, glm::vec3(0.0, 1.0, 0.0));
-    
+
     moview = glm::rotate(moview, mouse.x, glm::vec3(0.0, 1.0, 0.0));
-    
+
     glm::mat4 inview = glm::inverse(moview);
     move = inview * move;
 

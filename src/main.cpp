@@ -11,7 +11,6 @@
 #include "includes.h"
 #include "newchunk.h"
 #include "newchunk2.h"
-#include "testmodel.h"
 #include "testplane.h"
 #include "text.h"
 
